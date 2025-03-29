@@ -1,0 +1,9 @@
+{
+  "node_version": "20",
+  "graphs": {
+    "dashboard": "./src/agent/index.ts:graph"
+  },
+  "ui": {
+    "dashboard": "./src/agent/ui.tsx"
+  }
+} 

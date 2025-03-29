@@ -187,8 +187,18 @@ const AppCard = ({ name, percentage, icon }: AppCardProps) => {
   )
 }
 
-export function AppDashboard() {
-  const defaultConfig = {
+interface AppDashboardProps {
+  defaultConfig?: {
+    cols: number;
+    rows: number;
+    rowHeight: number;
+    margin: [number, number];
+    layouts?: any[];
+  };
+}
+
+export function AppDashboard({ defaultConfig }: AppDashboardProps) {
+  const initialConfig = defaultConfig || {
     cols: 5,
     rows: 10,
     rowHeight: 60,
@@ -197,9 +207,9 @@ export function AppDashboard() {
 
   const [width, setWidth] = useState(0)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [gridConfig, setGridConfig] = useState(defaultConfig);
-  const [rowInput, setRowInput] = useState(defaultConfig.rows.toString())
-  const [colInput, setColInput] = useState(defaultConfig.cols.toString())
+  const [gridConfig, setGridConfig] = useState(initialConfig);
+  const [rowInput, setRowInput] = useState(initialConfig.rows.toString())
+  const [colInput, setColInput] = useState(initialConfig.cols.toString())
   
   useEffect(() => {
     const updateWidth = () => {
@@ -241,12 +251,12 @@ export function AppDashboard() {
     }));
   };
 
-  const [layouts, setLayouts] = useState<Layout[]>(() => generateInitialLayout(defaultConfig));
+  const [layouts, setLayouts] = useState<Layout[]>(() => generateInitialLayout(initialConfig));
 
   // Initialize with default XML
   useEffect(() => {
     if (isInitialLoad) {
-      const defaultXml = generateXmlDescription(layouts, apps, defaultConfig);
+      const defaultXml = generateXmlDescription(layouts, apps, initialConfig);
       updateUiXml(defaultXml);
       setIsInitialLoad(false);
     }
