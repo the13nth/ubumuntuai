@@ -18,7 +18,6 @@ import {
   IconSearch,
   IconUser,
   IconSettings,
-  IconGripHorizontal,
 } from "@tabler/icons-react"
 import { useState } from "react"
 
@@ -26,26 +25,17 @@ interface AppCardProps {
   name: string
   percentage: number
   icon?: React.ReactNode
-  onResizeStart?: () => void
 }
 
-const AppCard = ({ name, percentage, icon, onResizeStart }: AppCardProps) => {
+const AppCard = ({ name, percentage, icon }: AppCardProps) => {
   return (
-    <Card className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800/50 transition-colors h-full">
+    <Card className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800/50 transition-colors h-full cursor-move">
       <CardContent className="p-4 flex items-center justify-between h-full">
         <div className="space-y-1.5">
           <p className="text-sm text-zinc-400">{name}</p>
           <p className="text-sm font-medium text-zinc-300">{percentage}%</p>
         </div>
-        <div className="flex flex-col items-end justify-between h-full">
-          {icon && <div className="text-zinc-400">{icon}</div>}
-          <div 
-            className="text-zinc-600 cursor-move mt-auto" 
-            onMouseDown={onResizeStart}
-          >
-            <IconGripHorizontal size={16} />
-          </div>
-        </div>
+        {icon && <div className="text-zinc-400">{icon}</div>}
       </CardContent>
     </Card>
   )
@@ -98,8 +88,8 @@ export function AppDashboard() {
           width={600}
           margin={[12, 12]}
           onLayoutChange={(newLayout: Layout[]) => setLayouts(newLayout)}
-          draggableHandle=".cursor-move"
           isResizable={true}
+          resizeHandles={['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne']}
           compactType={null}
           preventCollision={true}
         >
