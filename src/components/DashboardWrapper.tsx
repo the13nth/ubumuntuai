@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { AppDashboard } from './AppDashboard';
 import { updateDashboardConfig, type DashboardConfig } from '../agent';
 import { IconBulb, IconFilter, IconSettings } from '@tabler/icons-react';
-import { saveConfig, getLatestConfig, getConfigByCategory, cleanupOldConfigs } from '../lib/db';
+import { saveConfig, getLatestConfig, getConfigByCategory } from '../lib/db';
 
 const DEFAULT_APPS = [
   { name: "Facebook", percentage: 29, category: "social" },
