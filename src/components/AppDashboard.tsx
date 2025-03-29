@@ -19,7 +19,7 @@ import {
   IconUser,
   IconSettings,
 } from "@tabler/icons-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface AppCardProps {
   name: string
@@ -30,10 +30,10 @@ interface AppCardProps {
 const AppCard = ({ name, percentage, icon }: AppCardProps) => {
   return (
     <Card className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800/50 transition-colors h-full cursor-move">
-      <CardContent className="p-4 flex items-center justify-between h-full">
-        <div className="space-y-1.5">
-          <p className="text-sm text-zinc-400">{name}</p>
-          <p className="text-sm font-medium text-zinc-300">{percentage}%</p>
+      <CardContent className="p-3 sm:p-4 flex items-center justify-between h-full">
+        <div className="space-y-1">
+          <p className="text-xs sm:text-sm text-zinc-400">{name}</p>
+          <p className="text-xs sm:text-sm font-medium text-zinc-300">{percentage}%</p>
         </div>
         {icon && <div className="text-zinc-400">{icon}</div>}
       </CardContent>
@@ -42,6 +42,19 @@ const AppCard = ({ name, percentage, icon }: AppCardProps) => {
 }
 
 export function AppDashboard() {
+  const [width, setWidth] = useState(0)
+  
+  useEffect(() => {
+    const updateWidth = () => {
+      const containerWidth = document.querySelector('.grid-container')?.clientWidth || 0
+      setWidth(containerWidth)
+    }
+    
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
+
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return "Good morning"
@@ -50,43 +63,43 @@ export function AppDashboard() {
   }
 
   const apps = [
-    { name: "Facebook", percentage: 29, icon: <IconBrandFacebook size={20} /> },
-    { name: "Google Mail", percentage: 13, icon: <IconBrandGmail size={20} /> },
-    { name: "Instagram", percentage: 31, icon: <IconBrandInstagram size={20} /> },
-    { name: "Number 26", percentage: 0, icon: <IconNumber size={20} /> },
-    { name: "Whatsapp", percentage: 15, icon: <IconBrandWhatsapp size={20} /> },
-    { name: "Twitter", percentage: 13, icon: <IconBrandX size={20} /> },
-    { name: "Google Maps", percentage: 24, icon: <IconMap size={20} /> },
-    { name: "Spotify", percentage: 21, icon: <IconBrandSpotify size={20} /> },
-    { name: "Uber", percentage: 0, icon: <IconCar size={20} /> },
-    { name: "Drive Now", percentage: 9, icon: <IconCarSuv size={20} /> },
-    { name: "New York Times", percentage: 27, icon: <IconNews size={20} /> },
-    { name: "Skype", percentage: 18, icon: <IconBrandSkype size={20} /> },
+    { name: "Facebook", percentage: 29, icon: <IconBrandFacebook size={18} /> },
+    { name: "Google Mail", percentage: 13, icon: <IconBrandGmail size={18} /> },
+    { name: "Instagram", percentage: 31, icon: <IconBrandInstagram size={18} /> },
+    { name: "Number 26", percentage: 0, icon: <IconNumber size={18} /> },
+    { name: "Whatsapp", percentage: 15, icon: <IconBrandWhatsapp size={18} /> },
+    { name: "Twitter", percentage: 13, icon: <IconBrandX size={18} /> },
+    { name: "Google Maps", percentage: 24, icon: <IconMap size={18} /> },
+    { name: "Spotify", percentage: 21, icon: <IconBrandSpotify size={18} /> },
+    { name: "Uber", percentage: 0, icon: <IconCar size={18} /> },
+    { name: "Drive Now", percentage: 9, icon: <IconCarSuv size={18} /> },
+    { name: "New York Times", percentage: 27, icon: <IconNews size={18} /> },
+    { name: "Skype", percentage: 18, icon: <IconBrandSkype size={18} /> },
   ]
 
   const [layouts, setLayouts] = useState<Layout[]>(() => {
     return apps.map((app, i) => ({
       i: app.name,
-      x: i % 5,
-      y: Math.floor(i / 5),
+      x: i % 3,
+      y: Math.floor(i / 3),
       w: 1,
       h: 1,
     }))
   })
 
   return (
-    <div className="min-h-screen bg-black p-6 flex flex-col pb-32">
-      <h1 className="text-2xl font-semibold text-zinc-100 mb-6 text-center">
+    <div className="min-h-screen bg-black p-4 sm:p-6 flex flex-col pb-32">
+      <h1 className="text-xl sm:text-2xl font-semibold text-zinc-100 mb-4 sm:mb-6 text-center">
         {getGreeting()}, Germain
       </h1>
-      <div className="max-w-2xl mx-auto w-full">
+      <div className="grid-container w-full max-w-md mx-auto">
         <GridLayout
           className="layout"
           layout={layouts}
-          cols={5}
-          rowHeight={80}
-          width={600}
-          margin={[12, 12]}
+          cols={3}
+          rowHeight={70}
+          width={width}
+          margin={[8, 8]}
           onLayoutChange={(newLayout: Layout[]) => setLayouts(newLayout)}
           isResizable={true}
           resizeHandles={['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne']}
@@ -104,24 +117,24 @@ export function AppDashboard() {
           ))}
         </GridLayout>
       </div>
-      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 p-3 sm:p-4">
         <input
           type="text"
           placeholder="Type something..."
-          className="w-full max-w-sm mx-auto block mb-4 bg-zinc-800 border-0 rounded-lg px-4 py-2 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700"
+          className="w-full max-w-sm mx-auto block mb-3 sm:mb-4 bg-zinc-800 border-0 rounded-lg px-3 py-2 text-sm sm:text-base text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700"
         />
         <nav className="flex justify-around items-center max-w-sm mx-auto">
-          <button className="p-2 text-zinc-400 hover:text-zinc-100">
-            <IconHome size={24} />
+          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
+            <IconHome size={22} />
           </button>
-          <button className="p-2 text-zinc-400 hover:text-zinc-100">
-            <IconSearch size={24} />
+          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
+            <IconSearch size={22} />
           </button>
-          <button className="p-2 text-zinc-400 hover:text-zinc-100">
-            <IconUser size={24} />
+          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
+            <IconUser size={22} />
           </button>
-          <button className="p-2 text-zinc-400 hover:text-zinc-100">
-            <IconSettings size={24} />
+          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
+            <IconSettings size={22} />
           </button>
         </nav>
       </div>
