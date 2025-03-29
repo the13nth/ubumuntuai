@@ -55,13 +55,6 @@ export function AppDashboard() {
     return () => window.removeEventListener('resize', updateWidth)
   }, [])
 
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return "Good morning"
-    if (hour < 18) return "Good afternoon"
-    return "Good evening"
-  }
-
   const apps = [
     { name: "Facebook", percentage: 29, icon: <IconBrandFacebook size={18} /> },
     { name: "Google Mail", percentage: 13, icon: <IconBrandGmail size={18} /> },
@@ -89,9 +82,6 @@ export function AppDashboard() {
 
   return (
     <div className="min-h-screen bg-black p-4 sm:p-6 flex flex-col pb-32">
-      <h1 className="text-xl sm:text-2xl font-semibold text-zinc-100 mb-4 sm:mb-6 text-center">
-        {getGreeting()}, Germain
-      </h1>
       <div className="grid-container w-full max-w-md mx-auto">
         <GridLayout
           className="layout"
@@ -116,27 +106,6 @@ export function AppDashboard() {
             </div>
           ))}
         </GridLayout>
-      </div>
-      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 p-3 sm:p-4">
-        <input
-          type="text"
-          placeholder="Type something..."
-          className="w-full max-w-sm mx-auto block mb-3 sm:mb-4 bg-zinc-800 border-0 rounded-lg px-3 py-2 text-sm sm:text-base text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700"
-        />
-        <nav className="flex justify-around items-center max-w-sm mx-auto">
-          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
-            <IconHome size={22} />
-          </button>
-          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
-            <IconSearch size={22} />
-          </button>
-          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
-            <IconUser size={22} />
-          </button>
-          <button className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-100">
-            <IconSettings size={22} />
-          </button>
-        </nav>
       </div>
     </div>
   )

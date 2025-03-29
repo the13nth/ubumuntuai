@@ -18,6 +18,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-grid-layout": "^1.5.1",
+    "react-router-dom": "^7.4.1",
+    "react-swipeable": "^7.0.2",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
