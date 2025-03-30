@@ -1,7 +1,7 @@
 import { getLatestConfig } from '../lib/db';
 import { Responsive as ResponsiveGridLayout, Layouts } from 'react-grid-layout';
 import { Card, CardContent } from "../components/ui/card";
-import { IconPlus, IconActivity, IconBriefcase, IconCar, IconCheck } from "@tabler/icons-react";
+import { IconPlus, IconActivity, IconBriefcase, IconCar, IconCheck, IconX } from "@tabler/icons-react";
 import { useState } from "react";
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -50,6 +50,15 @@ interface Config {
   apps: AppConfig[];
 }
 
+interface DiabetesTracking {
+  bloodSugar: string;
+  medication: string;
+  mealType: string;
+  exerciseMinutes: string;
+  notes: string;
+  timestamp: Date;
+}
+
 const mockContexts: ContextData[] = [
   {
     id: 'health',
@@ -88,6 +97,15 @@ export default function HomePage() {
   const [contexts, setContexts] = useState(mockContexts);
   const [showDailyPlan, setShowDailyPlan] = useState(false);
   const [selectedContext, setSelectedContext] = useState<ContextData | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [trackingData, setTrackingData] = useState<DiabetesTracking>({
+    bloodSugar: '',
+    medication: '',
+    mealType: '',
+    exerciseMinutes: '',
+    notes: '',
+    timestamp: new Date()
+  });
 
   // Convert config.layouts to the expected Layouts type
   const layouts: Layouts = config?.layouts ? {
@@ -129,7 +147,23 @@ export default function HomePage() {
     setSelectedContext(context);
     setShowDailyPlan(true);
   };
-  
+
+  const handleTrackingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would typically save the tracking data
+    console.log('Tracking data:', trackingData);
+    setShowAddForm(false);
+    // Reset form
+    setTrackingData({
+      bloodSugar: '',
+      medication: '',
+      mealType: '',
+      exerciseMinutes: '',
+      notes: '',
+      timestamp: new Date()
+    });
+  };
+
   return (
     <div className="p-4 min-h-screen bg-black">
       <div className="flex justify-between items-center mb-4">
@@ -229,11 +263,115 @@ export default function HomePage() {
             </Card>
           ))}
 
+          {/* Add Context Form Modal */}
+          {showAddForm && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+              <div className="bg-zinc-900 rounded-xl w-full max-w-md overflow-hidden">
+                <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-zinc-100">Add Diabetes Tracking</h3>
+                  <button 
+                    onClick={() => setShowAddForm(false)}
+                    className="text-zinc-400 hover:text-zinc-200"
+                  >
+                    <IconX size={20} />
+                  </button>
+                </div>
+                <form onSubmit={handleTrackingSubmit} className="p-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Blood Sugar Level (mg/dL)
+                    </label>
+                    <input
+                      type="number"
+                      value={trackingData.bloodSugar}
+                      onChange={(e) => setTrackingData({...trackingData, bloodSugar: e.target.value})}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      placeholder="Enter blood sugar level"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Medication Taken
+                    </label>
+                    <input
+                      type="text"
+                      value={trackingData.medication}
+                      onChange={(e) => setTrackingData({...trackingData, medication: e.target.value})}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      placeholder="Enter medication details"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Meal Type
+                    </label>
+                    <select
+                      value={trackingData.mealType}
+                      onChange={(e) => setTrackingData({...trackingData, mealType: e.target.value})}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      required
+                    >
+                      <option value="">Select meal type</option>
+                      <option value="breakfast">Breakfast</option>
+                      <option value="lunch">Lunch</option>
+                      <option value="dinner">Dinner</option>
+                      <option value="snack">Snack</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Exercise Duration (minutes)
+                    </label>
+                    <input
+                      type="number"
+                      value={trackingData.exerciseMinutes}
+                      onChange={(e) => setTrackingData({...trackingData, exerciseMinutes: e.target.value})}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      placeholder="Enter exercise duration"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-1">
+                      Notes
+                    </label>
+                    <textarea
+                      value={trackingData.notes}
+                      onChange={(e) => setTrackingData({...trackingData, notes: e.target.value})}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      placeholder="Enter any additional notes"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddForm(false)}
+                      className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                    >
+                      Save Entry
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-4 sm:p-6">
-              <button className="w-full flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 py-3 px-4 rounded-lg transition-colors">
+              <button 
+                onClick={() => setShowAddForm(true)}
+                className="w-full flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 py-3 px-4 rounded-lg transition-colors"
+              >
                 <IconPlus size={20} />
-                <span className="text-sm font-medium">Add Context</span>
+                <span className="text-sm font-medium">Add Tracking Entry</span>
               </button>
             </CardContent>
           </Card>
@@ -300,6 +438,24 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-zinc-100 mb-4">Problems</h2>
+        <div className="w-full space-y-3 sm:space-y-4">
+          <p>
+            Problem 1
+            Artificial Intelligence systems often struggle with understanding and incorporating cultural context, particularly in healthcare applications. Traditional AI models lack the nuanced understanding of cultural practices, beliefs, and social dynamics that are crucial for providing personalized and culturally sensitive healthcare recommendations.
+          </p>
+          <p>
+            Problem 2
+            Current healthcare management systems are rigid and fail to adapt to individual patient contexts. While they can track basic health metrics, they don't consider the holistic nature of health management, including social determinants, daily routines, and personal preferences that significantly impact treatment adherence and outcomes.
+          </p>
+          <p>
+            Problem 3
+            There's a significant gap in integrating traditional knowledge systems with modern healthcare technology. Many communities have valuable traditional healthcare practices and wisdom that are not effectively incorporated into digital health solutions, leading to a disconnect between technological solutions and cultural healing practices.
+          </p>
+        </div>
+      </div>
     </div>
   );
 } 

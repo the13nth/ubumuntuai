@@ -14,15 +14,59 @@ import {
   IconCarSuv,
   IconNews,
   IconBrandSkype,
+  IconRobot,
+  IconActivity,
+  IconBriefcase,
 } from "@tabler/icons-react"
 import { useState, useEffect } from "react"
 import type { DashboardConfig } from '../agent'
+import { collection, query, orderBy, limit, getDocs, doc, getDoc, onSnapshot } from "firebase/firestore"
+import { db } from "../lib/firebase"
 
 interface AppCardProps {
   name: string
   percentage: number
   category?: string
   icon?: React.ReactNode
+}
+
+interface HealthRecommendation {
+  recommendations: string[];
+  timestamp: Date;
+  status: string;
+}
+
+interface WorkRecommendation {
+  recommendations: string[];
+  timestamp: Date;
+  status: string;
+  taskName: string;
+  priority: string;
+  deadline: string;
+}
+
+interface CommuteRecommendation {
+  recommendations: string[];
+  timestamp: Date;
+  startLocation: string;
+  endLocation: string;
+  duration: string;
+  trafficCondition: string;
+  transportMode: string;
+}
+
+interface ActiveContext {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  recommendation?: HealthRecommendation;
+  workRecommendation?: WorkRecommendation;
+  commuteRecommendation?: CommuteRecommendation;
+}
+
+interface ContextStatus {
+  active: boolean;
+  updated_at: Date;
 }
 
 const AppCard = ({ name, percentage, category, icon }: AppCardProps) => {
@@ -89,6 +133,7 @@ export function AppDashboard({ defaultConfig, hideControls = false }: AppDashboa
   const [gridConfig, setGridConfig] = useState<DashboardConfig>(defaultConfig);
   const [rowInput, setRowInput] = useState(defaultConfig.rows.toString())
   const [colInput, setColInput] = useState(defaultConfig.cols.toString())
+  const [activeContexts, setActiveContexts] = useState<ActiveContext[]>([])
   
   // Update grid config when defaultConfig changes
   useEffect(() => {
@@ -97,6 +142,103 @@ export function AppDashboard({ defaultConfig, hideControls = false }: AppDashboa
     setRowInput(defaultConfig.rows.toString());
     setColInput(defaultConfig.cols.toString());
   }, [defaultConfig]);
+
+  useEffect(() => {
+    const fetchActiveContexts = async () => {
+      try {
+        // First, get all context statuses
+        const healthStatusDoc = await getDoc(doc(db, 'context_status', 'health'));
+        const workStatusDoc = await getDoc(doc(db, 'context_status', 'work'));
+        const commuteStatusDoc = await getDoc(doc(db, 'context_status', 'commute'));
+
+        const contexts: ActiveContext[] = [];
+
+        // Only fetch and add health context if it's active
+        if (healthStatusDoc.exists() && healthStatusDoc.data().active) {
+          const healthRef = collection(db, 'health_ai_recommendation');
+          const healthQuery = query(healthRef, orderBy('timestamp', 'desc'), limit(1));
+          const healthSnapshot = await getDocs(healthQuery);
+          
+          if (!healthSnapshot.empty) {
+            const healthData = healthSnapshot.docs[0].data();
+            contexts.push({
+              id: 'health',
+              name: 'Health: Diabetes',
+              icon: <IconActivity className="text-emerald-500" size={24} />,
+              recommendation: {
+                recommendations: healthData.recommendations || [],
+                timestamp: healthData.timestamp.toDate(),
+                status: healthData.status || 'Normal'
+              }
+            });
+          }
+        }
+
+        // Only fetch and add work context if it's active
+        if (workStatusDoc.exists() && workStatusDoc.data().active) {
+          const workRef = collection(db, 'work_ai_recommendation');
+          const workQuery = query(workRef, orderBy('timestamp', 'desc'), limit(1));
+          const workSnapshot = await getDocs(workQuery);
+          
+          if (!workSnapshot.empty) {
+            const workData = workSnapshot.docs[0].data();
+            contexts.push({
+              id: 'work',
+              name: 'Work',
+              icon: <IconBriefcase className="text-blue-500" size={24} />,
+              workRecommendation: {
+                recommendations: workData.recommendations || [],
+                timestamp: workData.timestamp.toDate(),
+                status: workData.status || '',
+                taskName: workData.taskName || '',
+                priority: workData.priority || '',
+                deadline: workData.deadline || ''
+              }
+            });
+          }
+        }
+
+        // Only fetch and add commute context if it's active
+        if (commuteStatusDoc.exists() && commuteStatusDoc.data().active) {
+          const commuteRef = collection(db, 'commute_ai_recommendation');
+          const commuteQuery = query(commuteRef, orderBy('timestamp', 'desc'), limit(1));
+          const commuteSnapshot = await getDocs(commuteQuery);
+          
+          if (!commuteSnapshot.empty) {
+            const commuteData = commuteSnapshot.docs[0].data();
+            contexts.push({
+              id: 'commute',
+              name: 'Commute',
+              icon: <IconCar className="text-amber-500" size={24} />,
+              commuteRecommendation: {
+                recommendations: commuteData.recommendations || [],
+                timestamp: commuteData.timestamp.toDate(),
+                startLocation: commuteData.startLocation || '',
+                endLocation: commuteData.endLocation || '',
+                duration: commuteData.duration || '',
+                trafficCondition: commuteData.trafficCondition || '',
+                transportMode: commuteData.transportMode || ''
+              }
+            });
+          }
+        }
+
+        setActiveContexts(contexts);
+      } catch (error) {
+        console.error('Error fetching active contexts:', error);
+      }
+    };
+
+    fetchActiveContexts();
+
+    // Set up real-time listener for context status changes
+    const statusCollection = collection(db, 'context_status');
+    const unsubscribe = onSnapshot(statusCollection, () => {
+      fetchActiveContexts();
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -145,6 +287,138 @@ export function AppDashboard({ defaultConfig, hideControls = false }: AppDashboa
             </div>
           ))}
         </GridLayout>
+
+        {/* Active Contexts Section */}
+        {activeContexts.length > 0 && (
+          <div className="mt-8 space-y-4">
+            <h2 className="text-lg font-medium text-zinc-100 px-1">Active Contexts</h2>
+            <div className="space-y-4">
+              {activeContexts.map((context) => (
+                <Card 
+                  key={context.id} 
+                  className="bg-zinc-900 border-zinc-800 border-l-4 border-l-emerald-500"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-4">
+                      {context.icon}
+                      <h3 className="text-base font-medium text-zinc-100">{context.name}</h3>
+                    </div>
+
+                    {/* Health Context */}
+                    {context.id === 'health' && context.recommendation && (
+                      <div className="bg-zinc-800/50 rounded-lg p-4">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <IconRobot className="text-emerald-500" size={18} />
+                            <h4 className="text-sm font-medium text-emerald-500">AI Recommendations</h4>
+                          </div>
+                          <span className={`text-xs px-2 py-0.5 rounded ${
+                            context.recommendation.status === 'Normal' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                          }`}>
+                            {context.recommendation.status}
+                          </span>
+                        </div>
+                        <ul className="space-y-2">
+                          {context.recommendation.recommendations.map((rec, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-emerald-500 mt-1">•</span>
+                              <p className="text-sm text-zinc-300">{rec}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Work Context */}
+                    {context.id === 'work' && context.workRecommendation && (
+                      <div className="bg-zinc-800/50 rounded-lg p-4">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <IconRobot className="text-blue-500" size={18} />
+                            <h4 className="text-sm font-medium text-blue-500">Task Status</h4>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              context.workRecommendation.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {context.workRecommendation.status}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              context.workRecommendation.priority === 'high' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                            }`}>
+                              {context.workRecommendation.priority} priority
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mb-3 text-sm">
+                          <p className="text-zinc-200 font-medium">{context.workRecommendation.taskName}</p>
+                          <p className="text-zinc-400 text-xs mt-1">
+                            Deadline: {new Date(context.workRecommendation.deadline).toLocaleString()}
+                          </p>
+                        </div>
+                        <ul className="space-y-2">
+                          {context.workRecommendation.recommendations.map((rec, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-blue-500 mt-1">•</span>
+                              <p className="text-sm text-zinc-300">{rec}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Commute Context */}
+                    {context.id === 'commute' && context.commuteRecommendation && (
+                      <div className="bg-zinc-800/50 rounded-lg p-4">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <IconRobot className="text-amber-500" size={18} />
+                            <h4 className="text-sm font-medium text-amber-500">Route Status</h4>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <span className={`text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400`}>
+                              {context.commuteRecommendation.transportMode}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              context.commuteRecommendation.trafficCondition === 'light' 
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : context.commuteRecommendation.trafficCondition === 'moderate'
+                                ? 'bg-amber-500/20 text-amber-400'
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              {context.commuteRecommendation.trafficCondition} traffic
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mb-3 text-sm space-y-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="text-zinc-400">From:</span>
+                            <span className="text-zinc-300">{context.commuteRecommendation.startLocation}</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="text-zinc-400">To:</span>
+                            <span className="text-zinc-300">{context.commuteRecommendation.endLocation}</span>
+                          </div>
+                          <p className="text-zinc-400 text-xs">
+                            Duration: {context.commuteRecommendation.duration} minutes
+                          </p>
+                        </div>
+                        <ul className="space-y-2">
+                          {context.commuteRecommendation.recommendations.map((rec, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-amber-500 mt-1">•</span>
+                              <p className="text-sm text-zinc-300">{rec}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       
       {!hideControls && (
