@@ -1,34 +1,44 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Link, useNavigate } from "react-router-dom"
 import { DashboardWrapper } from "./components/DashboardWrapper"
-import { Context } from "./components/Context"
+import { Context as ContextPage } from "./components/Context"
 import { useSwipeable } from "react-swipeable"
 import { SwipeIndicator } from "./components/SwipeIndicator"
 import { useState } from "react"
+import { HistoryPage } from './pages/HistoryPage'
+import RagPage from './components/RagPage'
 
 function Navigation() {
   const location = useLocation()
-  const isHome = location.pathname === "/"
-  const isContext = location.pathname === "/context"
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-zinc-800 p-4">
-      <div className="max-w-xl mx-auto space-y-4">
-        <div className="flex justify-center space-x-8">
-          <Link
-            to="/"
-            className={`text-sm ${isHome ? "text-zinc-300" : "text-zinc-500"} hover:text-zinc-300 transition-colors`}
-          >
-            Home
-          </Link>
-          <Link
-            to="/context"
-            className={`text-sm ${isContext ? "text-zinc-300" : "text-zinc-500"} hover:text-zinc-300 transition-colors`}
-          >
-            Context
-          </Link>
-        </div>
+    <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-zinc-800">
+      <div className="max-w-xl mx-auto flex justify-center space-x-6 p-4">
+        <Link 
+          to="/" 
+          className={`text-sm ${location.pathname === '/' ? 'text-zinc-200' : 'text-zinc-500'}`}
+        >
+          Home
+        </Link>
+        <Link 
+          to="/context" 
+          className={`text-sm ${location.pathname === '/context' ? 'text-zinc-200' : 'text-zinc-500'}`}
+        >
+          Context
+        </Link>
+        <Link 
+          to="/history" 
+          className={`text-sm ${location.pathname === '/history' ? 'text-zinc-200' : 'text-zinc-500'}`}
+        >
+          Query History
+        </Link>
+        <Link 
+          to="/rag" 
+          className={`text-sm ${location.pathname === '/rag' ? 'text-zinc-200' : 'text-zinc-500'}`}
+        >
+          RAG Analytics
+        </Link>
       </div>
-    </nav>
+    </div>
   )
 }
 
@@ -67,7 +77,9 @@ function SwipeableRoutes() {
       <SwipeIndicator swipeAmount={swipeAmount} />
       <Routes>
         <Route path="/" element={<DashboardWrapper />} />
-        <Route path="/context" element={<Context />} />
+        <Route path="/context" element={<ContextPage />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/rag" element={<RagPage />} />
       </Routes>
     </div>
   )

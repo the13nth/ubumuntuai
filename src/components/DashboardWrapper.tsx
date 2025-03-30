@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { AppDashboard } from './AppDashboard';
 import { updateDashboardConfig, type DashboardConfig } from '../agent';
 import { IconBulb, IconFilter, IconSettings } from '@tabler/icons-react';
-import { saveConfig, getLatestConfig, getConfigByCategory } from '../lib/db';
+import { saveConfig, getLatestConfig, getConfigByCategory, sendQueryToRAG } from '../lib/db';
 
 const DEFAULT_APPS = [
   { name: "Facebook", percentage: 29, category: "social" },
@@ -108,6 +108,31 @@ export function DashboardWrapper() {
       ? DEFAULT_APPS.filter(app => app.category === category)
       : DEFAULT_APPS;
 
+    // Build and send query to RAG API using the direct approach
+    const query = category 
+      ? `Display ${CATEGORIES[category as CategoryKey]} apps` 
+      : "Show all apps";
+      
+    // Set loading indicator for RAG query
+    setIsLoading(true);
+    
+    // Pass both query and category to Firebase
+    sendQueryToRAG(query, category)
+      .then(result => {
+        console.log('Firebase query response:', result);
+        if (result && !result.error) {
+          console.log('Category filter query saved to Firebase:', category);
+        } else {
+          console.warn('Category filter query returned an error:', result?.error || 'Unknown error');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to save category filter query to Firebase:', error);
+      })
+      .finally(() => {
+        // Don't turn off loading here as the grid update will handle that
+      });
+
     // Calculate optimal grid dimensions based on number of apps
     const numApps = filteredApps.length;
     let newCols: number;
@@ -159,6 +184,48 @@ export function DashboardWrapper() {
     console.log('Filtering by category:', category);
     console.log('Filtered apps:', filteredApps);
     console.log('New config:', newConfig);
+    
+    // Log complete category filter flow
+    console.log('CATEGORY FILTER COMPLETE UPDATE:', JSON.stringify({
+      action: 'filterByCategory',
+      category: category,
+      timestamp: new Date().toISOString(),
+      originalConfig: {
+        cols: config.cols,
+        rows: config.rows,
+        rowHeight: config.rowHeight,
+        margin: config.margin,
+        activeCategory,
+        numApps: config.apps.length
+      },
+      filteredApps: {
+        count: filteredApps.length,
+        categories: [...new Set(filteredApps.map(app => app.category))],
+        names: filteredApps.map(app => app.name)
+      },
+      newGridDimensions: {
+        cols: newCols,
+        rows: newRows,
+        rowHeight: newRowHeight,
+        margin: config.margin
+      },
+      finalConfig: {
+        cols: newConfig.cols,
+        rows: newConfig.rows,
+        rowHeight: newConfig.rowHeight,
+        margin: newConfig.margin,
+        activeCategory: category,
+        numApps: newConfig.apps.length,
+        numLayouts: newConfig.layouts.length
+      },
+      changes: {
+        colsChanged: config.cols !== newConfig.cols,
+        rowsChanged: config.rows !== newConfig.rows,
+        rowHeightChanged: config.rowHeight !== newConfig.rowHeight,
+        marginChanged: JSON.stringify(config.margin) !== JSON.stringify(newConfig.margin),
+        appsChanged: config.apps.length !== newConfig.apps.length
+      }
+    }, null, 2));
 
     setConfig(newConfig);
     // Save the new configuration with the category
@@ -168,54 +235,102 @@ export function DashboardWrapper() {
   const handleSubmit = async (text: string = input) => {
     if (!text.trim() || isLoading) return;
     
-    // Check if the input contains category-related keywords
-    const categoryKeywords = {
-      work: ["work", "business", "professional"],
-      social: ["social", "social media"],
-      financial: ["financial", "finance", "money"],
-      entertainment: ["entertainment", "fun", "media"],
-      utility: ["utility", "tools"],
-      transportation: ["transportation", "travel"],
-      news: ["news", "current events"]
-    };
+    // Set loading state
+    setIsLoading(true);
+    
+    // Direct API call for query with proper error handling
+    try {
+      // Pass the active category with the query for context
+      const ragResult = await sendQueryToRAG(text, activeCategory);
+      console.log('Firebase query result:', ragResult);
+      
+      // Process category keywords
+      const categoryKeywords = {
+        work: ["work", "business", "professional"],
+        social: ["social", "social media"],
+        financial: ["financial", "finance", "money"],
+        entertainment: ["entertainment", "fun", "media"],
+        utility: ["utility", "tools"],
+        transportation: ["transportation", "travel"],
+        news: ["news", "current events"]
+      };
 
-    let foundCategory = false;
-    for (const [category, keywords] of Object.entries(categoryKeywords)) {
-      if (keywords.some(keyword => text.toLowerCase().includes(keyword))) {
-        console.log('Found category match:', category);
-        filterAppsByCategory(category);
-        setInput('');
-        setShowSuggestions(false);
-        foundCategory = true;
-        break;
+      let foundCategory = false;
+      for (const [category, keywords] of Object.entries(categoryKeywords)) {
+        if (keywords.some(keyword => text.toLowerCase().includes(keyword))) {
+          console.log('Found category match:', category);
+          filterAppsByCategory(category);
+          setInput('');
+          setShowSuggestions(false);
+          foundCategory = true;
+          break;
+        }
       }
-    }
 
-    if (!foundCategory) {
-      setIsLoading(true);
-      try {
-        const newConfig = await updateDashboardConfig(text, config);
-        console.log('New config from AI:', newConfig);
-        // Preserve the current apps and layouts when updating via AI
-        const updatedConfig = {
-          ...newConfig,
-          apps: config.apps,
-          layouts: (config.layouts || []).map(layout => ({
-            ...layout,
-            maxW: newConfig.cols,
-            maxH: newConfig.rows
-          }))
-        };
-        setConfig(updatedConfig);
-        // Save the new configuration
-        saveConfig(updatedConfig, activeCategory);
-        setInput('');
-        setShowSuggestions(false);
-      } catch (error) {
-        console.error('Error updating config:', error);
-      } finally {
-        setIsLoading(false);
+      if (!foundCategory) {
+        try {
+          const newConfig = await updateDashboardConfig(text, config);
+          console.log('New config from AI:', newConfig);
+          
+          // Preserve the current apps and layouts when updating via AI
+          const updatedConfig = {
+            ...newConfig,
+            apps: config.apps,
+            layouts: (config.layouts || []).map(layout => ({
+              ...layout,
+              maxW: newConfig.cols,
+              maxH: newConfig.rows
+            }))
+          };
+          
+          // Log complete config update flow in DashboardWrapper
+          console.log('DASHBOARD WRAPPER COMPLETE UPDATE:', JSON.stringify({
+            query: text,
+            timestamp: new Date().toISOString(),
+            originalConfig: {
+              cols: config.cols,
+              rows: config.rows,
+              rowHeight: config.rowHeight,
+              margin: config.margin,
+              activeCategory,
+              numApps: config.apps.length
+            },
+            newConfigFromAI: {
+              cols: newConfig.cols,
+              rows: newConfig.rows,
+              rowHeight: newConfig.rowHeight,
+              margin: newConfig.margin
+            },
+            finalUpdatedConfig: {
+              cols: updatedConfig.cols,
+              rows: updatedConfig.rows,
+              rowHeight: updatedConfig.rowHeight,
+              margin: updatedConfig.margin,
+              activeCategory,
+              numApps: updatedConfig.apps.length,
+              numLayouts: updatedConfig.layouts.length
+            },
+            changes: {
+              colsChanged: config.cols !== updatedConfig.cols,
+              rowsChanged: config.rows !== updatedConfig.rows,
+              rowHeightChanged: config.rowHeight !== updatedConfig.rowHeight,
+              marginChanged: JSON.stringify(config.margin) !== JSON.stringify(updatedConfig.margin)
+            }
+          }, null, 2));
+          
+          setConfig(updatedConfig);
+          // Save the new configuration
+          saveConfig(updatedConfig, activeCategory);
+          setInput('');
+          setShowSuggestions(false);
+        } catch (error) {
+          console.error('Error updating config:', error);
+        }
       }
+    } catch (error) {
+      console.error('Error saving query to Firebase:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

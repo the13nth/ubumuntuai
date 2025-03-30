@@ -1,0 +1,557 @@
+{
+  "categoryQueries": {
+    "social": {
+      "query": "Display Social apps",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Display Social apps\" for category: social",
+        "query_embedding_visualization": {
+          "x": 0.7234,
+          "y": 0.4981,
+          "z": 0.2756
+        },
+        "dashboardConfig": {
+          "cols": 3,
+          "rows": 2,
+          "rowHeight": 150,
+          "margin": [6, 6],
+          "activeCategory": "social",
+          "apps": [
+            { "name": "Facebook", "percentage": 29, "category": "social" },
+            { "name": "Instagram", "percentage": 31, "category": "social" },
+            { "name": "Whatsapp", "percentage": 15, "category": "social" },
+            { "name": "Twitter", "percentage": 13, "category": "social" }
+          ],
+          "layouts": [
+            { "i": "Facebook", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 3, "maxH": 2, "minW": 1, "minH": 1 },
+            { "i": "Instagram", "x": 1, "y": 0, "w": 1, "h": 1, "maxW": 3, "maxH": 2, "minW": 1, "minH": 1 },
+            { "i": "Whatsapp", "x": 2, "y": 0, "w": 1, "h": 1, "maxW": 3, "maxH": 2, "minW": 1, "minH": 1 },
+            { "i": "Twitter", "x": 0, "y": 1, "w": 1, "h": 1, "maxW": 3, "maxH": 2, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:35:22.631Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to \"social\"",
+        "Filtered apps to show only social apps (Facebook, Instagram, Whatsapp, Twitter)",
+        "Recalculated grid dimensions to 3x2 based on 4 apps",
+        "Adjusted rowHeight to 150px to maximize viewport usage",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "work": {
+      "query": "Show work apps only",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Show work apps only\" for category: work",
+        "query_embedding_visualization": {
+          "x": 0.5621,
+          "y": 0.3478,
+          "z": 0.7892
+        },
+        "dashboardConfig": {
+          "cols": 2,
+          "rows": 1,
+          "rowHeight": 180,
+          "margin": [6, 6],
+          "activeCategory": "work",
+          "apps": [
+            { "name": "Google Mail", "percentage": 13, "category": "work" },
+            { "name": "Skype", "percentage": 18, "category": "work" }
+          ],
+          "layouts": [
+            { "i": "Google Mail", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 2, "maxH": 1, "minW": 1, "minH": 1 },
+            { "i": "Skype", "x": 1, "y": 0, "w": 1, "h": 1, "maxW": 2, "maxH": 1, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:36:42.123Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to \"work\"",
+        "Filtered apps to show only work apps (Google Mail, Skype)",
+        "Recalculated grid dimensions to 2x1 based on 2 apps",
+        "Adjusted rowHeight to 180px to maximize viewport usage",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "financial": {
+      "query": "Display financial apps",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Display financial apps\" for category: financial",
+        "query_embedding_visualization": {
+          "x": 0.2154,
+          "y": 0.8976,
+          "z": 0.4329
+        },
+        "dashboardConfig": {
+          "cols": 1,
+          "rows": 1,
+          "rowHeight": 200,
+          "margin": [6, 6],
+          "activeCategory": "financial",
+          "apps": [
+            { "name": "Number 26", "percentage": 0, "category": "financial" }
+          ],
+          "layouts": [
+            { "i": "Number 26", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 1, "maxH": 1, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:37:33.451Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to \"financial\"",
+        "Filtered apps to show only financial apps (Number 26)",
+        "Recalculated grid dimensions to 1x1 based on 1 app",
+        "Adjusted rowHeight to 200px to maximize viewport usage",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "entertainment": {
+      "query": "Show entertainment apps",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Show entertainment apps\" for category: entertainment",
+        "query_embedding_visualization": {
+          "x": 0.3721,
+          "y": 0.6123,
+          "z": 0.5487
+        },
+        "dashboardConfig": {
+          "cols": 1,
+          "rows": 1,
+          "rowHeight": 200,
+          "margin": [6, 6],
+          "activeCategory": "entertainment",
+          "apps": [
+            { "name": "Spotify", "percentage": 21, "category": "entertainment" }
+          ],
+          "layouts": [
+            { "i": "Spotify", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 1, "maxH": 1, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:38:05.789Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to \"entertainment\"",
+        "Filtered apps to show only entertainment apps (Spotify)",
+        "Recalculated grid dimensions to 1x1 based on 1 app",
+        "Adjusted rowHeight to 200px to maximize viewport usage",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "utility": {
+      "query": "Show utility apps",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Show utility apps\" for category: utility",
+        "query_embedding_visualization": {
+          "x": 0.8731,
+          "y": 0.2345,
+          "z": 0.6123
+        },
+        "dashboardConfig": {
+          "cols": 1,
+          "rows": 1,
+          "rowHeight": 200,
+          "margin": [6, 6],
+          "activeCategory": "utility",
+          "apps": [
+            { "name": "Google Maps", "percentage": 24, "category": "utility" }
+          ],
+          "layouts": [
+            { "i": "Google Maps", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 1, "maxH": 1, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:38:55.123Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to \"utility\"",
+        "Filtered apps to show only utility apps (Google Maps)",
+        "Recalculated grid dimensions to 1x1 based on 1 app",
+        "Adjusted rowHeight to 200px to maximize viewport usage",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "transportation": {
+      "query": "Show transportation apps",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Show transportation apps\" for category: transportation",
+        "query_embedding_visualization": {
+          "x": 0.4567,
+          "y": 0.7893,
+          "z": 0.3216
+        },
+        "dashboardConfig": {
+          "cols": 2,
+          "rows": 1,
+          "rowHeight": 180,
+          "margin": [6, 6],
+          "activeCategory": "transportation",
+          "apps": [
+            { "name": "Uber", "percentage": 0, "category": "transportation" },
+            { "name": "Drive Now", "percentage": 9, "category": "transportation" }
+          ],
+          "layouts": [
+            { "i": "Uber", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 2, "maxH": 1, "minW": 1, "minH": 1 },
+            { "i": "Drive Now", "x": 1, "y": 0, "w": 1, "h": 1, "maxW": 2, "maxH": 1, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:39:10.456Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to \"transportation\"",
+        "Filtered apps to show only transportation apps (Uber, Drive Now)",
+        "Recalculated grid dimensions to 2x1 based on 2 apps",
+        "Adjusted rowHeight to 180px to maximize viewport usage",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "news": {
+      "query": "Show news apps",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Show news apps\" for category: news",
+        "query_embedding_visualization": {
+          "x": 0.5678,
+          "y": 0.4321,
+          "z": 0.8765
+        },
+        "dashboardConfig": {
+          "cols": 1,
+          "rows": 1,
+          "rowHeight": 200,
+          "margin": [6, 6],
+          "activeCategory": "news",
+          "apps": [
+            { "name": "New York Times", "percentage": 27, "category": "news" }
+          ],
+          "layouts": [
+            { "i": "New York Times", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 1, "maxH": 1, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:39:45.789Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to \"news\"",
+        "Filtered apps to show only news apps (New York Times)",
+        "Recalculated grid dimensions to 1x1 based on 1 app",
+        "Adjusted rowHeight to 200px to maximize viewport usage",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "all": {
+      "query": "Show all apps",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Show all apps\"",
+        "query_embedding_visualization": {
+          "x": 0.1875,
+          "y": 0.6234,
+          "z": 0.8945
+        },
+        "dashboardConfig": {
+          "cols": 5,
+          "rows": 10,
+          "rowHeight": 60,
+          "margin": [6, 6],
+          "activeCategory": null,
+          "apps": [
+            { "name": "Facebook", "percentage": 29, "category": "social" },
+            { "name": "Google Mail", "percentage": 13, "category": "work" },
+            { "name": "Instagram", "percentage": 31, "category": "social" },
+            { "name": "Number 26", "percentage": 0, "category": "financial" },
+            { "name": "Whatsapp", "percentage": 15, "category": "social" },
+            { "name": "Twitter", "percentage": 13, "category": "social" },
+            { "name": "Google Maps", "percentage": 24, "category": "utility" },
+            { "name": "Spotify", "percentage": 21, "category": "entertainment" },
+            { "name": "Uber", "percentage": 0, "category": "transportation" },
+            { "name": "Drive Now", "percentage": 9, "category": "transportation" },
+            { "name": "New York Times", "percentage": 27, "category": "news" },
+            { "name": "Skype", "percentage": 18, "category": "work" }
+          ],
+          "layouts": [
+            { "i": "Facebook", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Google Mail", "x": 1, "y": 0, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Instagram", "x": 2, "y": 0, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Number 26", "x": 3, "y": 0, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Whatsapp", "x": 4, "y": 0, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Twitter", "x": 0, "y": 1, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Google Maps", "x": 1, "y": 1, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Spotify", "x": 2, "y": 1, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Uber", "x": 3, "y": 1, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Drive Now", "x": 4, "y": 1, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "New York Times", "x": 0, "y": 2, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 },
+            { "i": "Skype", "x": 1, "y": 2, "w": 1, "h": 1, "maxW": 5, "maxH": 10, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:40:25.123Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": true,
+          "rowHeightChanged": true,
+          "marginChanged": false,
+          "appsChanged": true
+        }
+      },
+      "systemActions": [
+        "Changed activeCategory to null",
+        "Restored display of all 12 apps",
+        "Recalculated grid dimensions to 5x10",
+        "Adjusted rowHeight to 60px to accommodate more apps",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    }
+  },
+  "layoutQueries": {
+    "bigger": {
+      "query": "Make the cards bigger",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Make the cards bigger\"",
+        "query_embedding_visualization": {
+          "x": 0.3412,
+          "y": 0.8954,
+          "z": 0.5231
+        },
+        "dashboardConfig": {
+          "cols": 2,
+          "rows": 2,
+          "rowHeight": 200,
+          "margin": [10, 10],
+          "activeCategory": "social",
+          "apps": [
+            { "name": "Facebook", "percentage": 29, "category": "social" },
+            { "name": "Instagram", "percentage": 31, "category": "social" },
+            { "name": "Whatsapp", "percentage": 15, "category": "social" },
+            { "name": "Twitter", "percentage": 13, "category": "social" }
+          ],
+          "layouts": [
+            { "i": "Facebook", "x": 0, "y": 0, "w": 1, "h": 1, "maxW": 2, "maxH": 2, "minW": 1, "minH": 1 },
+            { "i": "Instagram", "x": 1, "y": 0, "w": 1, "h": 1, "maxW": 2, "maxH": 2, "minW": 1, "minH": 1 },
+            { "i": "Whatsapp", "x": 0, "y": 1, "w": 1, "h": 1, "maxW": 2, "maxH": 2, "minW": 1, "minH": 1 },
+            { "i": "Twitter", "x": 1, "y": 1, "w": 1, "h": 1, "maxW": 2, "maxH": 2, "minW": 1, "minH": 1 }
+          ]
+        },
+        "timestamp": "2025-03-30T14:41:22.456Z",
+        "changes": {
+          "colsChanged": true,
+          "rowsChanged": false,
+          "rowHeightChanged": true,
+          "marginChanged": true
+        }
+      },
+      "systemActions": [
+        "Maintained current activeCategory",
+        "Reduced columns (if greater than 1)",
+        "Increased rowHeight by 30px",
+        "Increased margin from [6,6] to [10,10]",
+        "Preserved current app filtering",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "compact": {
+      "query": "Create a more compact layout",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Create a more compact layout\"",
+        "query_embedding_visualization": {
+          "x": 0.5678,
+          "y": 0.1234,
+          "z": 0.9876
+        }
+      },
+      "systemActions": [
+        "Maintained current activeCategory",
+        "Increased columns",
+        "Decreased rowHeight by 20px",
+        "Decreased margin from [10,10] to [4,4]",
+        "Preserved current app filtering",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "widescreen": {
+      "query": "Optimize for widescreen display",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Optimize for widescreen display\"",
+        "query_embedding_visualization": {
+          "x": 0.9123,
+          "y": 0.3345,
+          "z": 0.1289
+        }
+      },
+      "systemActions": [
+        "Maintained current activeCategory",
+        "Increased columns",
+        "Decreased rows",
+        "Adjusted rowHeight to better fill horizontal space",
+        "Preserved current app filtering",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "spacing": {
+      "query": "Increase spacing between cards",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Increase spacing between cards\"",
+        "query_embedding_visualization": {
+          "x": 0.3456,
+          "y": 0.7890,
+          "z": 0.1234
+        }
+      },
+      "systemActions": [
+        "Maintained current activeCategory",
+        "Increased margin by [4,4]",
+        "Reduced columns (if necessary to accommodate increased spacing)",
+        "Preserved current app filtering",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "square": {
+      "query": "Make the grid more square-shaped",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Make the grid more square-shaped\"",
+        "query_embedding_visualization": {
+          "x": 0.6789,
+          "y": 0.4567,
+          "z": 0.2345
+        }
+      },
+      "systemActions": [
+        "Maintained current activeCategory",
+        "Balanced columns and rows to create a more square aspect ratio",
+        "Adjusted rowHeight to maintain overall size",
+        "Preserved current app filtering",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    },
+    "specificGrid": {
+      "query": "Arrange in a 3x4 grid",
+      "response": {
+        "success": true,
+        "answer": "Processed query: \"Arrange in a 3x4 grid\"",
+        "query_embedding_visualization": {
+          "x": 0.2468,
+          "y": 0.1357,
+          "z": 0.7890
+        }
+      },
+      "systemActions": [
+        "Maintained current activeCategory",
+        "Set columns to 3",
+        "Set rows to 4",
+        "Adjusted rowHeight to fit the new grid dimensions",
+        "Preserved current app filtering",
+        "Saved new configuration to localStorage",
+        "Logged interaction to Firebase including previous dashboard context"
+      ]
+    }
+  },
+  "errorResponses": {
+    "permissionError": {
+      "query": "Display Social apps",
+      "response": {
+        "answer": "Error: Missing or insufficient permissions.",
+        "error": "Missing or insufficient permissions."
+      },
+      "systemActions": [
+        "Attempted to save query to Firebase but encountered a permissions error",
+        "Maintained current dashboard configuration",
+        "Displayed error message to user",
+        "Logged error to console"
+      ]
+    },
+    "connectionError": {
+      "query": "Display Social apps",
+      "response": {
+        "answer": "Error: Failed to connect to the database server.",
+        "error": "Failed to connect to the database server."
+      },
+      "systemActions": [
+        "Attempted to save query to Firebase but encountered a connection error",
+        "Maintained current dashboard configuration",
+        "Displayed error message to user",
+        "Logged error to console"
+      ]
+    },
+    "parsingError": {
+      "query": "Arrange into a weird layout",
+      "response": {
+        "answer": "Error: Could not parse the requested configuration.",
+        "error": "Could not parse the requested configuration."
+      },
+      "systemActions": [
+        "Attempted to process the query but could not interpret the request",
+        "Maintained current dashboard configuration",
+        "Displayed error message to user",
+        "Logged error to console and Firebase"
+      ]
+    }
+  }
+} 

@@ -11,6 +11,7 @@ export interface DashboardConfig {
   margin: [number, number];
   layouts?: any[];
   apps: any[];
+  activeCategory?: string | null;
 }
 
 export async function updateDashboardConfig(userInput: string, currentConfig: DashboardConfig): Promise<DashboardConfig> {
@@ -45,9 +46,11 @@ export async function updateDashboardConfig(userInput: string, currentConfig: Da
 
       Make meaningful changes based on the request - don't return the same values unless the request specifically asks to keep them.`;
 
+    const startTime = new Date().toISOString();
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
+    const endTime = new Date().toISOString();
     
     console.log('Raw model response:', text);
     
@@ -97,6 +100,51 @@ export async function updateDashboardConfig(userInput: string, currentConfig: Da
     };
 
     console.log('Final updated config:', updatedConfig);
+    
+    // Log the complete response process as a single structured object
+    console.log('COMPLETE GEMINI RESPONSE FLOW:', JSON.stringify({
+      request: {
+        timestamp: startTime,
+        userInput,
+        originalConfig: {
+          cols: currentConfig.cols,
+          rows: currentConfig.rows,
+          rowHeight: currentConfig.rowHeight,
+          margin: currentConfig.margin,
+          numApps: currentConfig.apps.length,
+          activeCategory: currentConfig.activeCategory
+        },
+        prompt
+      },
+      response: {
+        timestamp: endTime,
+        raw: text,
+        parsed: newConfig,
+        validated: {
+          cols,
+          rows,
+          rowHeight,
+          margin
+        }
+      },
+      result: {
+        finalConfig: {
+          cols: updatedConfig.cols,
+          rows: updatedConfig.rows,
+          rowHeight: updatedConfig.rowHeight,
+          margin: updatedConfig.margin,
+          numApps: updatedConfig.apps.length,
+          activeCategory: updatedConfig.activeCategory
+        },
+        changes: {
+          colsChanged: currentConfig.cols !== cols,
+          rowsChanged: currentConfig.rows !== rows,
+          rowHeightChanged: currentConfig.rowHeight !== rowHeight,
+          marginChanged: JSON.stringify(currentConfig.margin) !== JSON.stringify(margin)
+        }
+      }
+    }, null, 2));
+    
     return updatedConfig;
   } catch (error) {
     console.error("Error updating dashboard config:", error);
