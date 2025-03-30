@@ -3,8 +3,8 @@ import { getRecentResponses } from '../lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
-import { updateDashboardConfig, type DashboardConfig } from '../agent';
-import { saveConfig, getLatestConfig, getConfigByCategory } from '../lib/db';
+import { type DashboardConfig } from '../agent';
+import { saveConfig, getLatestConfig } from '../lib/db';
 
 interface RAGQuery {
   id: string;
