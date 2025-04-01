@@ -2,6 +2,7 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Base collections for RAG
     match /rag_queries/{document} {
       allow read, write: if true;
     }
@@ -9,35 +10,44 @@ service cloud.firestore {
     match /rag_responses/{document} {
       allow read, write: if true;
     }
-    
-    match /health_context/{document} {
+
+    // Context collections
+    match /contexts/{document} {
       allow read, write: if true;
     }
-    
-    match /work_context/{document} {
-      allow read, write: if true;
-    }
-    
-    match /commute_context/{document} {
-      allow read, write: if true;
-    }
-    
-    match /health_ai_recommendation/{document} {
-      allow read, write: if true;
-    }
-    
-    match /work_ai_recommendation/{document} {
-      allow read, write: if true;
-    }
-    
-    match /commute_ai_recommendation/{document} {
-      allow read, write: if true;
-    }
-    
+
     match /context_status/{document} {
       allow read, write: if true;
     }
-    
+
+    // Health related collections
+    match /health_context/{document} {
+      allow read, write: if true;
+    }
+
+    match /health_ai_recommendation/{document} {
+      allow read, write: if true;
+    }
+
+    // Work related collections
+    match /work_context/{document} {
+      allow read, write: if true;
+    }
+
+    match /work_ai_recommendation/{document} {
+      allow read, write: if true;
+    }
+
+    // Commute related collections
+    match /commute_context/{document} {
+      allow read, write: if true;
+    }
+
+    match /commute_ai_recommendation/{document} {
+      allow read, write: if true;
+    }
+
+    // Default deny for all other collections
     match /{document=**} {
       allow read, write: if false;
     }

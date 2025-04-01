@@ -27,28 +27,28 @@ interface ExtendedDashboardConfig extends DashboardConfig {
   configSource?: 'firebase' | 'gemini';
 }
 
-interface AppConfig {
-  name: string;
-  [key: string]: any;
-}
+// interface AppConfig {
+//   name: string;
+//   [key: string]: any;
+// }
 
-interface Config {
-  configSource: 'firebase' | 'gemini';
-  layouts: {
-    [key: string]: {
-      i: string;
-      x: number;
-      y: number;
-      w: number;
-      h: number;
-      static?: boolean;
-    }[];
-  };
-  cols: number;
-  rowHeight: number;
-  margin: [number, number];
-  apps: AppConfig[];
-}
+// interface Config {
+//   configSource: 'firebase' | 'gemini';
+//   layouts: {
+//     [key: string]: {
+//       i: string;
+//       x: number;
+//       y: number;
+//       w: number;
+//       h: number;
+//       static?: boolean;
+//     }[];
+//   };
+//   cols: number;
+//   rowHeight: number;
+//   margin: [number, number];
+//   apps: AppConfig[];
+// }
 
 interface DiabetesTracking {
   bloodSugar: string;
@@ -143,10 +143,7 @@ export default function HomePage() {
     );
   };
 
-  const handleViewNextStep = (context: ContextData) => {
-    setSelectedContext(context);
-    setShowDailyPlan(true);
-  };
+
 
   const handleTrackingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,14 +237,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:justify-end sm:items-center">
-                  {context.id === 'health' && (
-                    <button 
-                      onClick={() => handleViewNextStep(context)}
-                      className="w-full sm:w-auto text-sm bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors order-1 sm:order-none"
-                    >
-                      View Next Step
-                    </button>
-                  )}
+                  
                   <button 
                     onClick={() => toggleContextActive(context.id)}
                     className={`w-full sm:w-auto text-sm px-4 py-2 rounded-lg transition-colors ${

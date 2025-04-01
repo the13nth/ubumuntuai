@@ -64,10 +64,6 @@ interface ActiveContext {
   commuteRecommendation?: CommuteRecommendation;
 }
 
-interface ContextStatus {
-  active: boolean;
-  updated_at: Date;
-}
 
 const AppCard = ({ name, percentage, category, icon }: AppCardProps) => {
   return (
