@@ -401,10 +401,12 @@ export default function Home() {
   }, []);
 
   const handleTemplateClick = (templateId: string) => {
-    if (expanded.templateId === templateId) {
-      setExpanded({ isExpanded: false, templateId: null });
-    } else {
-      setExpanded({ isExpanded: true, templateId: templateId });
+    if (!isEditMode && !isResizing && !isDragging) {
+      if (expanded.templateId === templateId) {
+        setExpanded({ isExpanded: false, templateId: null });
+      } else {
+        setExpanded({ isExpanded: true, templateId: templateId });
+      }
     }
   };
 
@@ -587,113 +589,19 @@ export default function Home() {
             {contextTemplates.map((template) => (
               <div key={template.id}>
                 <Card 
-                  className={`h-full group transition-all duration-300 ${
-                    expanded.templateId === template.id && !isEditMode
-                      ? 'fixed inset-4 z-50 bg-zinc-900/95 backdrop-blur-sm overflow-y-auto'
-                      : 'bg-zinc-900 hover:bg-zinc-800'
-                  }`}
+                  className="h-full group bg-zinc-900 hover:bg-zinc-800 transition-colors"
                 >
-                  <CardContent className={`h-full ${
-                    expanded.templateId === template.id && !isEditMode
-                      ? 'p-6'
-                      : 'p-4'
-                  }`}>
-                    {expanded.templateId === template.id && !isEditMode ? (
-                      <>
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="p-3 bg-zinc-800 rounded-xl">
-                              {template.icon}
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-medium text-zinc-100">{template.name}</h3>
-                              <p className="text-sm text-zinc-400">{template.type}</p>
-                            </div>
-                          </div>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setExpanded({ isExpanded: false, templateId: null });
-                            }}
-                            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
-                          >
-                            <IconX className="text-zinc-400" size={20} />
-                          </button>
-                        </div>
-                        
-                        <p className="text-sm text-zinc-300 mb-6">{template.description}</p>
-                        
-                        <div className="space-y-6">
-                          <div>
-                            <h4 className="text-sm font-medium text-zinc-400 mb-3">Suggested Tools</h4>
-                            <div className="grid grid-cols-2 gap-2">
-                              {template.suggestedTools.map((tool) => (
-                                <div
-                                  key={tool}
-                                  className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg"
-                                >
-                                  <IconTool size={16} className="text-zinc-400" />
-                                  <span className="text-sm text-zinc-300">
-                                    {tool.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h4 className="text-sm font-medium text-zinc-400 mb-3">Default Actions</h4>
-                            <div className="space-y-2">
-                              {template.defaultActions.map((action, index) => (
-                                <div
-                                  key={action}
-                                  className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg"
-                                >
-                                  <span className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-xs text-zinc-300">
-                                    {index + 1}
-                                  </span>
-                                  <span className="text-sm text-zinc-300">{action}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              await handleCreateContext(e);
-                              setSelectedTemplate('');
-                              setExpanded({ isExpanded: false, templateId: null });
-                            }}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors"
-                          >
-                            Use This Template
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="h-full">
-                        {isEditMode && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="p-2 bg-zinc-800 rounded-lg cursor-move">
-                              <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8M8 15h8" />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
-                        <div 
-                          className="h-full flex flex-col items-center justify-center text-center cursor-pointer"
-                          onClick={() => !isEditMode && handleTemplateClick(template.id)}
-                        >
-                          <div className="p-4 bg-zinc-800/50 rounded-xl mb-3 group-hover:bg-zinc-700/50 transition-colors">
-                            {template.icon}
-                          </div>
-                          <h3 className="text-sm font-medium text-zinc-100 mb-1">{template.name}</h3>
-                          <p className="text-xs text-zinc-400">{template.type}</p>
-                        </div>
+                  <CardContent className="h-full p-4">
+                    <div 
+                      className="h-full flex flex-col items-center justify-center text-center cursor-pointer"
+                      onClick={() => handleTemplateClick(template.id)}
+                    >
+                      <div className="p-4 bg-zinc-800/50 rounded-xl mb-3 group-hover:bg-zinc-700/50 transition-colors">
+                        {template.icon}
                       </div>
-                    )}
+                      <h3 className="text-sm font-medium text-zinc-100 mb-1">{template.name}</h3>
+                      <p className="text-xs text-zinc-400">{template.type}</p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -789,12 +697,94 @@ export default function Home() {
           </div>
         )}
 
-        {/* Backdrop for expanded view */}
-        {expanded.isExpanded && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setExpanded({ isExpanded: false, templateId: null })}
-          />
+        {/* Modal for expanded view */}
+        {expanded.isExpanded && !isEditMode && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setExpanded({ isExpanded: false, templateId: null })} />
+            <div className="relative min-h-screen flex items-center justify-center p-4">
+              <div className="relative bg-zinc-900 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                {contextTemplates.map((template) => {
+                  if (template.id === expanded.templateId) {
+                    return (
+                      <div key={template.id} className="p-6">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="p-3 bg-zinc-800 rounded-xl">
+                              {template.icon}
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-medium text-zinc-100">{template.name}</h3>
+                              <p className="text-sm text-zinc-400">{template.type}</p>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpanded({ isExpanded: false, templateId: null });
+                            }}
+                            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+                          >
+                            <IconX className="text-zinc-400" size={20} />
+                          </button>
+                        </div>
+
+                        <p className="text-sm text-zinc-300 mb-6">{template.description}</p>
+
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="text-sm font-medium text-zinc-400 mb-3">Suggested Tools</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              {template.suggestedTools.map((tool) => (
+                                <div
+                                  key={tool}
+                                  className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg"
+                                >
+                                  <IconTool size={16} className="text-zinc-400" />
+                                  <span className="text-sm text-zinc-300">
+                                    {tool.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4 className="text-sm font-medium text-zinc-400 mb-3">Default Actions</h4>
+                            <div className="space-y-2">
+                              {template.defaultActions.map((action, index) => (
+                                <div
+                                  key={action}
+                                  className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg"
+                                >
+                                  <span className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-xs text-zinc-300">
+                                    {index + 1}
+                                  </span>
+                                  <span className="text-sm text-zinc-300">{action}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await handleCreateContext(e);
+                              setSelectedTemplate('');
+                              setExpanded({ isExpanded: false, templateId: null });
+                            }}
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Use This Template
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Update the navigation section at the bottom */}
