@@ -16,6 +16,12 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Tools collection
+    match /tools/{document} {
+      allow read: if true;  // Allow reading tools for all users
+      allow write: if false; // Restrict writing tools to admin only
+    }
+
     // Context collections
     match /contexts/{document} {
       allow read, write: if true;

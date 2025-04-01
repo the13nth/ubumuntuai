@@ -6,12 +6,11 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "../styles/grid.css";
 import { 
-  IconPlus, IconTool, IconBrain, IconSearch, IconCamera, IconShoppingCart, 
-  IconMoodSmile, IconCode, IconRun, IconBriefcase, IconCar, IconBook, 
-  IconDeviceAnalytics, IconPill, IconChartBar, IconCalendarTime, IconHome,
+  IconPlus, IconTool, IconBrain, IconSearch, IconCamera, 
+   IconCode, IconRun, IconBriefcase, IconCar, IconBook, IconPill, IconChartBar, IconCalendarTime, IconHome,
   IconLeaf, IconBell, IconX 
 } from "@tabler/icons-react";
-import { collection, addDoc, serverTimestamp, doc, setDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, setDoc, getDoc, getDocs} from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 interface ContextTool {
@@ -61,15 +60,24 @@ interface GridConfig {
   margin: [number, number];
 }
 
-// Pre-configured context templates
-const contextTemplates = [
+// Update the Tool interface to make status optional with a default value
+interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  icon: string;
+  status?: 'available' | 'coming_soon';
+}
+
+// Update the contextTemplates array to use dynamic tools
+const baseContextTemplates = [
   {
     id: 'fitness',
     name: 'Fitness Tracker',
     type: 'health',
     description: 'Track workouts, set fitness goals, and monitor progress',
     icon: <IconRun className="text-emerald-500" />,
-    suggestedTools: ['activity-tracker', 'goal-setting', 'progress-charts', 'workout-planner', 'nutrition-tracker'],
     defaultActions: ['Record Activity', 'Analyze Progress', 'Get Recommendations']
   },
   {
@@ -78,7 +86,6 @@ const contextTemplates = [
     type: 'productivity',
     description: 'Manage tasks, track time, and collaborate with team',
     icon: <IconBriefcase className="text-blue-500" />,
-    suggestedTools: ['task-tracker', 'time-logger', 'team-collaboration', 'deadline-reminder', 'meeting-scheduler'],
     defaultActions: ['Log Task', 'Track Time', 'Update Status']
   },
   {
@@ -87,7 +94,6 @@ const contextTemplates = [
     type: 'transportation',
     description: 'Optimize your daily commute with real-time updates',
     icon: <IconCar className="text-amber-500" />,
-    suggestedTools: ['route-optimizer', 'traffic-monitor', 'time-estimator', 'weather-checker', 'transport-selector'],
     defaultActions: ['Plan Route', 'Check Conditions', 'Log Journey']
   },
   {
@@ -96,7 +102,6 @@ const contextTemplates = [
     type: 'education',
     description: 'Track study sessions and manage learning progress',
     icon: <IconBook className="text-purple-500" />,
-    suggestedTools: ['study-timer', 'topic-tracker', 'quiz-maker', 'note-organizer', 'revision-scheduler'],
     defaultActions: ['Start Session', 'Take Notes', 'Review Progress']
   },
   {
@@ -105,7 +110,6 @@ const contextTemplates = [
     type: 'health',
     description: 'Track health metrics and medication schedules',
     icon: <IconPill className="text-red-500" />,
-    suggestedTools: ['medication-tracker', 'symptom-logger', 'appointment-scheduler', 'health-metrics', 'diet-tracker'],
     defaultActions: ['Log Health Data', 'Check Schedule', 'Get Insights']
   },
   {
@@ -114,7 +118,6 @@ const contextTemplates = [
     type: 'lifestyle',
     description: 'Build and track daily habits for better living',
     icon: <IconChartBar className="text-indigo-500" />,
-    suggestedTools: ['habit-tracker', 'streak-counter', 'reminder-system', 'progress-visualizer', 'motivation-booster'],
     defaultActions: ['Check In', 'View Progress', 'Get Motivation']
   },
   {
@@ -123,7 +126,6 @@ const contextTemplates = [
     type: 'work',
     description: 'Manage projects and track deliverables',
     icon: <IconCalendarTime className="text-cyan-500" />,
-    suggestedTools: ['task-board', 'timeline-tracker', 'resource-manager', 'milestone-tracker', 'report-generator'],
     defaultActions: ['Update Tasks', 'Check Timeline', 'Generate Report']
   },
   {
@@ -132,7 +134,6 @@ const contextTemplates = [
     type: 'lifestyle',
     description: 'Manage home tasks and automation schedules',
     icon: <IconHome className="text-orange-500" />,
-    suggestedTools: ['task-scheduler', 'inventory-tracker', 'maintenance-logger', 'shopping-list', 'budget-tracker'],
     defaultActions: ['Add Task', 'Check Schedule', 'Update Inventory']
   },
   {
@@ -141,7 +142,6 @@ const contextTemplates = [
     type: 'sustainability',
     description: 'Track and reduce your environmental impact',
     icon: <IconLeaf className="text-green-500" />,
-    suggestedTools: ['carbon-calculator', 'recycling-tracker', 'energy-monitor', 'water-usage', 'eco-tips'],
     defaultActions: ['Log Activity', 'Calculate Impact', 'Get Tips']
   },
   {
@@ -150,62 +150,11 @@ const contextTemplates = [
     type: 'development',
     description: 'Track coding time and manage development tasks',
     icon: <IconCode className="text-zinc-300" />,
-    suggestedTools: ['code-timer', 'git-tracker', 'bug-logger', 'deployment-monitor', 'api-tester'],
     defaultActions: ['Start Coding', 'Log Issue', 'Track Deployment']
   }
 ];
 
-// Available tools organized by category
-const toolCategories = {
-  input: [
-    {
-      id: 'image-recognition',
-      name: 'Image Recognition',
-      description: 'Analyze images to identify objects and text',
-      icon: <IconCamera className="text-blue-500" />
-    },
-    {
-      id: 'text-input',
-      name: 'Text Input',
-      description: 'Process natural language queries',
-      icon: <IconMoodSmile className="text-green-500" />
-    },
-    {
-      id: 'data-collector',
-      name: 'Data Collector',
-      description: 'Collect and validate various types of data',
-      icon: <IconDeviceAnalytics className="text-purple-500" />
-    }
-  ],
-  process: [
-    {
-      id: 'ai-processor',
-      name: 'AI Processing',
-      description: 'Advanced AI analysis and recommendations',
-      icon: <IconBrain className="text-purple-500" />
-    },
-    {
-      id: 'search',
-      name: 'Search',
-      description: 'Search across various data sources',
-      icon: <IconSearch className="text-amber-500" />
-    }
-  ],
-  automation: [
-    {
-      id: 'scheduler',
-      name: 'Task Scheduler',
-      description: 'Schedule and automate tasks',
-      icon: <IconCalendarTime className="text-blue-500" />
-    },
-    {
-      id: 'notifier',
-      name: 'Smart Notifications',
-      description: 'Intelligent notification system',
-      icon: <IconBell className="text-amber-500" />
-    }
-  ]
-};
+
 
 // Add local storage functions near the other utility functions
 const LOCAL_STORAGE_KEY = 'grid_layout_config';
@@ -283,21 +232,15 @@ function debounce<T extends (...args: any[]) => any>(
 
 export default function Home() {
   const [contexts, setContexts] = useState<Context[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [, setSelectedTemplate] = useState<string>('');
   const [expanded, setExpanded] = useState<ExpandedState>({
     isExpanded: false,
     templateId: null
   });
-  const [newContext, setNewContext] = useState({
-    name: '',
-    type: '',
-    description: '',
-    selectedTools: [] as string[],
-    isPublic: false
-  });
+
   const [width, setWidth] = useState(0);
   const [gridConfig, setGridConfig] = useState<GridConfig>({
-    layouts: contextTemplates.map((template, i) => ({
+    layouts: baseContextTemplates.map((template, i) => ({
       i: template.id,
       x: (i % 3) * 4,  // More space between items horizontally
       y: Math.floor(i / 3) * 4,  // More space between items vertically
@@ -318,6 +261,25 @@ export default function Home() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+
+  const [availableTools, setAvailableTools] = useState<Tool[]>([]);
+  const [comingSoonTools, setComingSoonTools] = useState<Tool[]>([]);
+  const [toolsLoading, setToolsLoading] = useState(true);
+  const [toolsError, setToolsError] = useState<string | null>(null);
+
+  const [contextTemplates, setContextTemplates] = useState(baseContextTemplates);
+  const [selectedTools, setSelectedTools] = useState<Set<string>>(new Set());
+
+  // Add useEffect to update templates when tools are loaded
+  useEffect(() => {
+    if (availableTools.length > 0) {
+      const updatedTemplates = baseContextTemplates.map(template => ({
+        ...template,
+        suggestedTools: availableTools.map(tool => tool.id)
+      }));
+      setContextTemplates(updatedTemplates);
+    }
+  }, [availableTools]);
 
   // Update grid width on window resize
   useEffect(() => {
@@ -351,7 +313,7 @@ export default function Home() {
           }));
         } else {
           // Use default layout if no saved layout exists
-          const defaultLayout = contextTemplates.map((template, i) => ({
+          const defaultLayout = baseContextTemplates.map((template, i) => ({
             i: template.id,
             x: (i % 3) * 4,
             y: Math.floor(i / 3) * 4,
@@ -376,7 +338,7 @@ export default function Home() {
       } catch (error) {
         console.error('Error in loadInitialLayout:', error);
         // Use default layout as last resort
-        const defaultLayout = contextTemplates.map((template, i) => ({
+        const defaultLayout = baseContextTemplates.map((template, i) => ({
           i: template.id,
           x: (i % 3) * 4,
           y: Math.floor(i / 3) * 4,
@@ -400,6 +362,45 @@ export default function Home() {
     loadInitialLayout();
   }, []);
 
+  // Update useEffect to handle tools without status
+  useEffect(() => {
+    const fetchTools = async () => {
+      try {
+        setToolsLoading(true);
+        setToolsError(null);
+
+        const toolsRef = collection(db, 'tools');
+        const toolsSnapshot = await getDocs(toolsRef);
+        
+        const available: Tool[] = [];
+        const comingSoon: Tool[] = [];
+
+        toolsSnapshot.forEach((doc) => {
+          const tool = { id: doc.id, ...doc.data() } as Tool;
+          // If status is not specified or is 'available', treat as available
+          if (!tool.status || tool.status === 'available') {
+            available.push(tool);
+          } else {
+            comingSoon.push(tool);
+          }
+        });
+
+        console.log('Available tools:', available);
+        console.log('Coming soon tools:', comingSoon);
+
+        setAvailableTools(available);
+        setComingSoonTools(comingSoon);
+      } catch (error) {
+        console.error('Error fetching tools:', error);
+        setToolsError('Failed to load tools. Please try again later.');
+      } finally {
+        setToolsLoading(false);
+      }
+    };
+
+    fetchTools();
+  }, []);
+
   const handleTemplateClick = (templateId: string) => {
     if (!isEditMode && !isResizing && !isDragging) {
       if (expanded.templateId === templateId) {
@@ -414,29 +415,27 @@ export default function Home() {
     e.preventDefault();
     
     try {
-      const template = contextTemplates.find(t => t.id === selectedTemplate);
-      
-      // Convert string tool IDs to ContextTool objects
-      const contextTools: ContextTool[] = newContext.selectedTools.map(toolId => {
-        const tool = Object.values(toolCategories)
-          .flat()
-          .find(t => t.id === toolId);
-        
+      const template = contextTemplates.find(t => t.id === expanded.templateId);
+      if (!template) return;
+
+      // Get the selected tools data
+      const selectedToolsData = Array.from(selectedTools).map(toolId => {
+        const tool = availableTools.find(t => t.id === toolId);
         return {
           id: toolId,
-          name: tool?.name || toolId,
+          name: tool?.name || '',
           description: tool?.description || '',
-          icon: tool?.icon || <IconTool />
+          icon: tool?.icon || 'default'
         };
       });
 
       const contextData = {
-        name: newContext.name,
-        type: newContext.type,
-        description: newContext.description,
-        tools: contextTools,
-        actions: template?.defaultActions || [],
-        isPublic: newContext.isPublic,
+        name: template.name,
+        type: template.type,
+        description: template.description,
+        tools: selectedToolsData,
+        actions: template.defaultActions,
+        isPublic: false,
         created_at: serverTimestamp()
       };
 
@@ -445,34 +444,20 @@ export default function Home() {
       const newContextObj: Context = {
         id: docRef.id,
         ...contextData,
-        icon: getContextIcon(newContext.type),
+        icon: template.icon,
         created_at: new Date()
       };
 
-      setContexts([...contexts, newContextObj]);
+      setContexts(prev => [...prev, newContextObj]);
       setSelectedTemplate('');
-      setNewContext({
-        name: '',
-        type: '',
-        description: '',
-        selectedTools: [],
-        isPublic: false
-      });
+      setExpanded({ isExpanded: false, templateId: null });
+      setSelectedTools(new Set()); // Reset selections
     } catch (error) {
       console.error('Error creating context:', error);
     }
   };
 
-  const getContextIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'shopping':
-        return <IconShoppingCart className="text-emerald-500" />;
-      case 'development':
-        return <IconCode className="text-blue-500" />;
-      default:
-        return <IconTool className="text-zinc-500" />;
-    }
-  };
+ 
 
   const handleContextClick = (contextId: string) => {
     // Add your context click handling logic here
@@ -504,6 +489,24 @@ export default function Home() {
       document.removeEventListener('click', preventNavigation, true);
     };
   }, [isResizing, isDragging]);
+
+  // Add helper function to get tool icon component
+  const getToolIcon = (iconName: string): ReactNode => {
+    switch (iconName) {
+      case 'camera':
+        return <IconCamera className="text-blue-500" />;
+      case 'brain':
+        return <IconBrain className="text-purple-500" />;
+      case 'search':
+        return <IconSearch className="text-amber-500" />;
+      case 'calendar':
+        return <IconCalendarTime className="text-blue-500" />;
+      case 'bell':
+        return <IconBell className="text-amber-500" />;
+      default:
+        return <IconTool className="text-zinc-500" />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black pt-6 pb-28 px-4">
@@ -700,7 +703,13 @@ export default function Home() {
         {/* Modal for expanded view */}
         {expanded.isExpanded && !isEditMode && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setExpanded({ isExpanded: false, templateId: null })} />
+            <div 
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm" 
+              onClick={() => {
+                setExpanded({ isExpanded: false, templateId: null });
+                setSelectedTools(new Set()); // Reset selections when closing
+              }} 
+            />
             <div className="relative min-h-screen flex items-center justify-center p-4">
               <div className="relative bg-zinc-900 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 {contextTemplates.map((template) => {
@@ -721,6 +730,7 @@ export default function Home() {
                             onClick={(e) => {
                               e.stopPropagation();
                               setExpanded({ isExpanded: false, templateId: null });
+                              setSelectedTools(new Set()); // Reset selections
                             }}
                             className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
                           >
@@ -732,17 +742,59 @@ export default function Home() {
 
                         <div className="space-y-6">
                           <div>
-                            <h4 className="text-sm font-medium text-zinc-400 mb-3">Suggested Tools</h4>
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="text-sm font-medium text-zinc-400">Available Tools</h4>
+                              <span className="text-xs text-zinc-500">
+                                {selectedTools.size} tool{selectedTools.size !== 1 ? 's' : ''} selected
+                              </span>
+                            </div>
                             <div className="grid grid-cols-2 gap-2">
-                              {template.suggestedTools.map((tool) => (
+                              {availableTools.map((tool) => (
                                 <div
-                                  key={tool}
-                                  className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg"
+                                  key={tool.id}
+                                  onClick={() => {
+                                    setSelectedTools(prev => {
+                                      const newSet = new Set(prev);
+                                      if (newSet.has(tool.id)) {
+                                        newSet.delete(tool.id);
+                                      } else {
+                                        newSet.add(tool.id);
+                                      }
+                                      return newSet;
+                                    });
+                                  }}
+                                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                                    selectedTools.has(tool.id)
+                                      ? 'bg-blue-500/20 border border-blue-500/50'
+                                      : 'bg-zinc-800/50 hover:bg-zinc-700/50'
+                                  }`}
                                 >
-                                  <IconTool size={16} className="text-zinc-400" />
-                                  <span className="text-sm text-zinc-300">
-                                    {tool.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                  </span>
+                                  <div className={`flex items-center justify-center w-5 h-5 rounded border ${
+                                    selectedTools.has(tool.id)
+                                      ? 'border-blue-500 bg-blue-500'
+                                      : 'border-zinc-600'
+                                  }`}>
+                                    {selectedTools.has(tool.id) && (
+                                      <svg
+                                        className="w-3 h-3 text-white"
+                                        fill="none"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    )}
+                                  </div>
+                                  <div className="flex-1">
+                                    <span className={`text-sm ${
+                                      selectedTools.has(tool.id) ? 'text-blue-400' : 'text-zinc-300'
+                                    }`}>
+                                      {tool.name}
+                                    </span>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -753,7 +805,7 @@ export default function Home() {
                             <div className="space-y-2">
                               {template.defaultActions.map((action, index) => (
                                 <div
-                                  key={action}
+                                  key={index}
                                   className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg"
                                 >
                                   <span className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-xs text-zinc-300">
@@ -768,13 +820,24 @@ export default function Home() {
                           <button
                             onClick={async (e) => {
                               e.stopPropagation();
+                              if (selectedTools.size === 0) {
+                                return; // Don't proceed if no tools selected
+                              }
                               await handleCreateContext(e);
                               setSelectedTemplate('');
                               setExpanded({ isExpanded: false, templateId: null });
+                              setSelectedTools(new Set()); // Reset selections
                             }}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors"
+                            className={`w-full py-3 ${
+                              selectedTools.size > 0
+                                ? 'bg-blue-600 hover:bg-blue-500'
+                                : 'bg-zinc-600 cursor-not-allowed'
+                            } text-white rounded-lg text-sm font-medium transition-colors`}
                           >
-                            Use This Template
+                            {selectedTools.size > 0 
+                              ? `Use Template with ${selectedTools.size} Tool${selectedTools.size !== 1 ? 's' : ''}`
+                              : 'Select Tools to Continue'
+                            }
                           </button>
                         </div>
                       </div>
@@ -784,6 +847,64 @@ export default function Home() {
                 })}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Update Available Tools section */}
+        {availableTools.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold text-zinc-100 mb-4">Available Tools</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {availableTools.map((tool) => (
+                <Card key={tool.id} className="bg-zinc-900 hover:bg-zinc-800 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-zinc-800 rounded-lg">
+                        {getToolIcon(tool.icon)}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-zinc-100">{tool.name}</h3>
+                        <p className="text-xs text-zinc-400">{tool.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Update Coming Soon section */}
+        {comingSoonTools.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold text-zinc-100 mb-4">Coming Soon</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {comingSoonTools.map((tool) => (
+                <Card key={tool.id} className="bg-zinc-900/50 hover:bg-zinc-800/50 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-zinc-800/50 rounded-lg">
+                        {getToolIcon(tool.icon)}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-medium text-zinc-400">{tool.name}</h3>
+                          <span className="px-2 py-0.5 bg-zinc-800 rounded text-xs text-zinc-500">Coming Soon</span>
+                        </div>
+                        <p className="text-xs text-zinc-500">{tool.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Show message when no tools are available */}
+        {!toolsLoading && availableTools.length === 0 && comingSoonTools.length === 0 && !toolsError && (
+          <div className="mt-8 text-center py-12 bg-zinc-800/50 rounded-lg">
+            <p className="text-zinc-400">No tools available at the moment.</p>
           </div>
         )}
 
