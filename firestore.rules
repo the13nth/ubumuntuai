@@ -11,6 +11,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Layout configurations
+    match /layouts/{document} {
+      allow read, write: if true;
+    }
+
     // Context collections
     match /contexts/{document} {
       allow read, write: if true;

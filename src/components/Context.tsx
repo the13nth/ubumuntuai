@@ -1151,7 +1151,7 @@ export function Context() {
 
   return (
     <div className="min-h-screen bg-black pt-6 pb-28 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-zinc-100">Contexts</h1>
           <button
@@ -1279,249 +1279,177 @@ export function Context() {
           </div>
         )}
 
-        {/* Active Contexts Section */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-zinc-100">Active Contexts</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {contexts.filter(context => context.active).map((context) => (
-              <Card 
-                key={context.id} 
-                className="bg-zinc-900 border-zinc-800 border-l-4 border-l-emerald-500 transition-colors"
-              >
-                <CardContent className="p-3 sm:p-4 md:p-6">
-                  {/* Context Header */}
-                  <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {context.icon}
-                      <h3 className="text-sm sm:text-base md:text-lg font-medium text-zinc-100 truncate">
-                        {context.name}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => toggleUpdateForm(context.id)}
-                        className="p-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
-                        title="Update Context"
-                      >
-                        <IconPencil size={18} />
-                      </button>
-                      <button 
-                        onClick={() => toggleContextActive(context.id)}
-                        className="p-1.5 rounded-lg bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors"
-                        title="Deactivate Context"
-                      >
-                        <IconPower size={18} />
-                      </button>
-                    </div>
+        {/* Main Context Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {contexts.map((context) => (
+            <Card 
+              key={context.id} 
+              className={`bg-zinc-900 border-zinc-800 transition-colors ${
+                context.active ? 'border-l-4 border-l-emerald-500' : ''
+              }`}
+            >
+              <CardContent className="p-4 sm:p-6">
+                {/* Context Header */}
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-3">
+                    {context.icon}
+                    <h3 className="text-lg font-medium text-zinc-100 truncate">
+                      {context.name}
+                    </h3>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleUpdateForm(context.id)}
+                      className="p-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+                      title="Update Context"
+                    >
+                      <IconPencil size={18} />
+                    </button>
+                    <button 
+                      onClick={() => toggleContextActive(context.id)}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        context.active
+                          ? 'bg-zinc-700 text-zinc-200 hover:bg-zinc-600'
+                          : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                      }`}
+                      title={context.active ? "Deactivate Context" : "Activate Context"}
+                    >
+                      <IconPower size={18} />
+                    </button>
+                  </div>
+                </div>
 
-                  {/* Update Form */}
-                  {context.isUpdating && (
-                    <div className="mb-4 bg-zinc-800/50 rounded-lg p-4">
-                      {renderForm(context.id)}
+                {/* Update Form */}
+                {context.isUpdating && (
+                  <div className="mb-4 bg-zinc-800/50 rounded-lg p-4">
+                    {renderForm(context.id)}
+                  </div>
+                )}
+
+                {/* Health Recommendations */}
+                {context.id === 'health' && context.recommendation && (
+                  <div className="mb-4 bg-zinc-800/50 rounded-lg p-4">
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <IconRobot className="text-emerald-500" size={18} />
+                        <h4 className="text-sm font-medium text-emerald-500">AI Recommendations</h4>
+                      </div>
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        context.recommendation.status === 'Normal' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                      }`}>
+                        {context.recommendation.status}
+                      </span>
                     </div>
-                  )}
+                    <ul className="space-y-2">
+                      {context.recommendation.recommendations.map((rec, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-emerald-500 mt-1">•</span>
+                          <p className="text-sm text-zinc-300">{rec}</p>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-zinc-500 mt-3">
+                      Last updated: {context.recommendation.timestamp.toLocaleString()}
+                    </p>
+                  </div>
+                )}
 
-                  {/* Health Recommendations */}
-                  {context.id === 'health' && context.recommendation && (
-                    <div className="mb-3 sm:mb-4 bg-zinc-800/50 rounded-lg p-3 sm:p-4">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <IconRobot className="text-emerald-500" size={18} />
-                          <h4 className="text-xs sm:text-sm font-medium text-emerald-500">AI Recommendations</h4>
-                        </div>
+                {/* Work Recommendations */}
+                {context.id === 'work' && context.workRecommendation && (
+                  <div className="mb-4 bg-zinc-800/50 rounded-lg p-4">
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <IconRobot className="text-blue-500" size={18} />
+                        <h4 className="text-sm font-medium text-blue-500">Task Status</h4>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
                         <span className={`text-xs px-2 py-0.5 rounded ${
-                          context.recommendation.status === 'Normal' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                          context.workRecommendation.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'
                         }`}>
-                          {context.recommendation.status}
+                          {context.workRecommendation.status}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded ${
+                          context.workRecommendation.priority === 'high' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                        }`}>
+                          {context.workRecommendation.priority} priority
                         </span>
                       </div>
-                      <ul className="space-y-2">
-                        {context.recommendation.recommendations.map((rec, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-emerald-500 mt-1">•</span>
-                            <p className="text-xs sm:text-sm text-zinc-300">{rec}</p>
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="text-xs text-zinc-500 mt-2">
-                        Last updated: {context.recommendation.timestamp.toLocaleString()}
+                    </div>
+                    <div className="mb-3">
+                      <p className="text-sm text-zinc-200 font-medium">{context.workRecommendation.taskName}</p>
+                      <p className="text-xs text-zinc-400 mt-1">
+                        Deadline: {new Date(context.workRecommendation.deadline).toLocaleString()}
                       </p>
                     </div>
-                  )}
+                    <ul className="space-y-2">
+                      {context.workRecommendation.recommendations.map((rec, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-blue-500 mt-1">•</span>
+                          <p className="text-sm text-zinc-300">{rec}</p>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-zinc-500 mt-3">
+                      Last updated: {context.workRecommendation.timestamp.toLocaleString()}
+                    </p>
+                  </div>
+                )}
 
-                  {/* Work Recommendations */}
-                  {context.id === 'work' && context.workRecommendation && (
-                    <div className="mb-3 sm:mb-4 bg-zinc-800/50 rounded-lg p-3 sm:p-4">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <IconRobot className="text-blue-500" size={18} />
-                          <h4 className="text-xs sm:text-sm font-medium text-blue-500">Task Status</h4>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className={`text-xs px-2 py-0.5 rounded ${
-                            context.workRecommendation.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'
-                          }`}>
-                            {context.workRecommendation.status}
-                          </span>
-                          <span className={`text-xs px-2 py-0.5 rounded ${
-                            context.workRecommendation.priority === 'high' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
-                          }`}>
-                            {context.workRecommendation.priority} priority
-                          </span>
-                        </div>
+                {/* Commute Recommendations */}
+                {context.id === 'commute' && context.commuteRecommendation && (
+                  <div className="mb-4 bg-zinc-800/50 rounded-lg p-4">
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <IconRobot className="text-amber-500" size={18} />
+                        <h4 className="text-sm font-medium text-amber-500">Route Status</h4>
                       </div>
-                      <div className="mb-3 text-xs sm:text-sm">
-                        <p className="text-zinc-200 font-medium">{context.workRecommendation.taskName}</p>
-                        <p className="text-zinc-400 text-xs mt-1">
-                          Deadline: {new Date(context.workRecommendation.deadline).toLocaleString()}
-                        </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className={`text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400`}>
+                          {context.commuteRecommendation.transportMode}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded ${
+                          context.commuteRecommendation.trafficCondition === 'light' 
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : context.commuteRecommendation.trafficCondition === 'moderate'
+                            ? 'bg-amber-500/20 text-amber-400'
+                            : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {context.commuteRecommendation.trafficCondition} traffic
+                        </span>
                       </div>
-                      <ul className="space-y-2">
-                        {context.workRecommendation.recommendations.map((rec, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-blue-500 mt-1">•</span>
-                            <p className="text-xs sm:text-sm text-zinc-300">{rec}</p>
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="text-xs text-zinc-500 mt-2">
-                        Last updated: {context.workRecommendation.timestamp.toLocaleString()}
+                    </div>
+                    <div className="mb-3 space-y-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-sm text-zinc-400">From:</span>
+                        <span className="text-sm text-zinc-300">{context.commuteRecommendation.startLocation}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-sm text-zinc-400">To:</span>
+                        <span className="text-sm text-zinc-300">{context.commuteRecommendation.endLocation}</span>
+                      </div>
+                      <p className="text-sm text-zinc-400">
+                        Duration: {context.commuteRecommendation.duration} minutes
                       </p>
                     </div>
-                  )}
-
-                  {/* Commute Recommendations */}
-                  {context.id === 'commute' && context.commuteRecommendation && (
-                    <div className="mb-3 sm:mb-4 bg-zinc-800/50 rounded-lg p-3 sm:p-4">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <IconRobot className="text-amber-500" size={18} />
-                          <h4 className="text-xs sm:text-sm font-medium text-amber-500">Route Status</h4>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className={`text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400`}>
-                            {context.commuteRecommendation.transportMode}
-                          </span>
-                          <span className={`text-xs px-2 py-0.5 rounded ${
-                            context.commuteRecommendation.trafficCondition === 'light' 
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : context.commuteRecommendation.trafficCondition === 'moderate'
-                              ? 'bg-amber-500/20 text-amber-400'
-                              : 'bg-red-500/20 text-red-400'
-                          }`}>
-                            {context.commuteRecommendation.trafficCondition} traffic
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mb-3 text-xs sm:text-sm space-y-1">
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <span className="text-zinc-400">From:</span>
-                          <span className="text-zinc-300">{context.commuteRecommendation.startLocation}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <span className="text-zinc-400">To:</span>
-                          <span className="text-zinc-300">{context.commuteRecommendation.endLocation}</span>
-                        </div>
-                        <p className="text-zinc-400 text-xs">
-                          Duration: {context.commuteRecommendation.duration} minutes
-                        </p>
-                      </div>
-                      <ul className="space-y-2">
-                        {context.commuteRecommendation.recommendations.map((rec, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-amber-500 mt-1">•</span>
-                            <p className="text-xs sm:text-sm text-zinc-300">{rec}</p>
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="text-xs text-zinc-500 mt-2">
-                        Last updated: {context.commuteRecommendation.timestamp.toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Apps Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 mb-3 sm:mb-4">
-                    {context.apps.map((app) => (
-                      <div 
-                        key={app}
-                        className="bg-zinc-800 text-zinc-300 px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm truncate"
-                      >
-                        {app}
-                      </div>
-                    ))}
+                    <ul className="space-y-2">
+                      {context.commuteRecommendation.recommendations.map((rec, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-amber-500 mt-1">•</span>
+                          <p className="text-sm text-zinc-300">{rec}</p>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-zinc-500 mt-3">
+                      Last updated: {context.commuteRecommendation.timestamp.toLocaleString()}
+                    </p>
                   </div>
+                )}
 
-                  {/* Context Updates */}
-                  {renderContextUpdates(context.id)}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Inactive Contexts Section */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-zinc-100">Available Contexts</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {contexts.filter(context => !context.active).map((context) => (
-              <Card 
-                key={context.id} 
-                className="bg-zinc-900 border-zinc-800 transition-colors"
-              >
-                <CardContent className="p-3 sm:p-4 md:p-6">
-                  {/* Context Header */}
-                  <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {context.icon}
-                      <h3 className="text-sm sm:text-base md:text-lg font-medium text-zinc-100 truncate">
-                        {context.name}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => toggleUpdateForm(context.id)}
-                        className="p-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
-                        title="Update Context"
-                      >
-                        <IconPencil size={18} />
-                      </button>
-                      <button 
-                        onClick={() => toggleContextActive(context.id)}
-                        className="p-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
-                        title="Activate Context"
-                      >
-                        <IconPower size={18} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Update Form */}
-                  {context.isUpdating && (
-                    <div className="mb-4 bg-zinc-800/50 rounded-lg p-4">
-                      {renderForm(context.id)}
-                    </div>
-                  )}
-
-                  {/* Apps Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 mb-3 sm:mb-4">
-                    {context.apps.map((app) => (
-                      <div 
-                        key={app}
-                        className="bg-zinc-800 text-zinc-300 px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm truncate"
-                      >
-                        {app}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Context Updates */}
-                  {renderContextUpdates(context.id)}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                {/* Context Updates */}
+                {renderContextUpdates(context.id)}
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Daily Plan Modal */}

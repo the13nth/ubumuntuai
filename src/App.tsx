@@ -6,6 +6,7 @@ import { SwipeIndicator } from "./components/SwipeIndicator"
 import { useState } from "react"
 import { HistoryPage } from './pages/HistoryPage'
 import RagPage from './components/RagPage'
+import Home from './components/Home'
 
 function Navigation() {
   const location = useLocation()
@@ -17,13 +18,13 @@ function Navigation() {
           to="/" 
           className={`text-sm ${location.pathname === '/' ? 'text-zinc-200' : 'text-zinc-500'}`}
         >
-          Home
+          Contexts
         </Link>
         <Link 
-          to="/context" 
-          className={`text-sm ${location.pathname === '/context' ? 'text-zinc-200' : 'text-zinc-500'}`}
+          to="/dashboard" 
+          className={`text-sm ${location.pathname === '/dashboard' ? 'text-zinc-200' : 'text-zinc-500'}`}
         >
-          Context
+          Dashboard
         </Link>
         <Link 
           to="/history" 
@@ -51,17 +52,17 @@ function SwipeableRoutes() {
     onSwiping: (event) => {
       if (location.pathname === "/" && event.deltaX < 0) {
         setSwipeAmount(event.deltaX)
-      } else if (location.pathname === "/context" && event.deltaX > 0) {
+      } else if (location.pathname === "/dashboard" && event.deltaX > 0) {
         setSwipeAmount(event.deltaX)
       }
     },
     onSwipedLeft: () => {
       if (location.pathname === "/") {
-        navigate("/context")
+        navigate("/dashboard")
       }
     },
     onSwipedRight: () => {
-      if (location.pathname === "/context") {
+      if (location.pathname === "/dashboard") {
         navigate("/")
       }
     },
@@ -76,7 +77,8 @@ function SwipeableRoutes() {
     <div {...handlers}>
       <SwipeIndicator swipeAmount={swipeAmount} />
       <Routes>
-        <Route path="/" element={<DashboardWrapper />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<DashboardWrapper />} />
         <Route path="/context" element={<ContextPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/rag" element={<RagPage />} />
