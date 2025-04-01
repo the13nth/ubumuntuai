@@ -38,7 +38,10 @@ interface ExpandedState {
   templateId: string | null;
 }
 
-// Add new interface for stored layout
+// Add this type definition at the top with other interfaces
+type ResizeHandle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
+// Update the StoredLayout interface to include resizeHandles
 interface StoredLayout extends Layout {
   i: string;
   x: number;
@@ -49,6 +52,14 @@ interface StoredLayout extends Layout {
   minH?: number;
   maxW?: number;
   maxH?: number;
+  resizeHandles?: ResizeHandle[];
+}
+
+// Add this new interface for stored positions
+interface StoredPosition {
+  id: string;
+  layout: StoredLayout;
+  lastModified: number;
 }
 
 // Update the GridConfig interface
@@ -154,8 +165,6 @@ const baseContextTemplates = [
   }
 ];
 
-
-
 // Add local storage functions near the other utility functions
 const LOCAL_STORAGE_KEY = 'grid_layout_config';
 
@@ -177,22 +186,53 @@ const loadLayoutFromLocalStorage = (): StoredLayout[] | null => {
   }
 };
 
-// Update the saveLayoutToFirebase function to use local storage as fallback
+// Add these utility functions near the other storage functions
+const POSITIONS_STORAGE_KEY = 'card_positions';
+
+const savePositionsToLocalStorage = (layouts: StoredLayout[]) => {
+  try {
+    const positions: StoredPosition[] = layouts.map(layout => ({
+      id: layout.i,
+      layout,
+      lastModified: Date.now()
+    }));
+    localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(positions));
+  } catch (error) {
+    console.error('Error saving positions to local storage:', error);
+  }
+};
+
+const loadPositionsFromLocalStorage = (): StoredLayout[] | null => {
+  try {
+    const saved = localStorage.getItem(POSITIONS_STORAGE_KEY);
+    if (!saved) return null;
+    
+    const positions: StoredPosition[] = JSON.parse(saved);
+    return positions.map(p => p.layout);
+  } catch (error) {
+    console.error('Error loading positions from local storage:', error);
+    return null;
+  }
+};
+
+// Update the saveLayoutToFirebase function
 const saveLayoutToFirebase = async (layouts: StoredLayout[]) => {
   try {
     await setDoc(doc(db, 'layouts', 'grid_config'), {
       layouts,
       updated_at: serverTimestamp()
     });
-    // Also save to local storage as backup
+    // Save to both local storage systems
     saveLayoutToLocalStorage(layouts);
+    savePositionsToLocalStorage(layouts);
   } catch (error) {
     console.error('Error saving to Firebase, falling back to local storage:', error);
     saveLayoutToLocalStorage(layouts);
+    savePositionsToLocalStorage(layouts);
   }
 };
 
-// Update the loadLayoutFromFirebase function to use local storage as fallback
+// Update the loadLayoutFromFirebase function
 const loadLayoutFromFirebase = async (): Promise<StoredLayout[] | null> => {
   try {
     const docRef = doc(db, 'layouts', 'grid_config');
@@ -200,12 +240,18 @@ const loadLayoutFromFirebase = async (): Promise<StoredLayout[] | null> => {
     
     if (docSnap.exists()) {
       const layouts = docSnap.data().layouts;
-      // Save to local storage as backup
       saveLayoutToLocalStorage(layouts);
+      savePositionsToLocalStorage(layouts);
       return layouts;
     }
     
-    // Try loading from local storage if Firebase fails
+    // Try loading from positions storage first
+    const positionLayouts = loadPositionsFromLocalStorage();
+    if (positionLayouts) {
+      return positionLayouts;
+    }
+    
+    // Fall back to regular layout storage
     const localLayouts = loadLayoutFromLocalStorage();
     if (localLayouts) {
       return localLayouts;
@@ -214,21 +260,10 @@ const loadLayoutFromFirebase = async (): Promise<StoredLayout[] | null> => {
     return null;
   } catch (error) {
     console.error('Error loading from Firebase, trying local storage:', error);
-    return loadLayoutFromLocalStorage();
+    const positionLayouts = loadPositionsFromLocalStorage();
+    return positionLayouts || loadLayoutFromLocalStorage();
   }
 };
-
-// Add debounce utility function
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
 
 export default function Home() {
   const [contexts, setContexts] = useState<Context[]>([]);
@@ -259,8 +294,6 @@ export default function Home() {
     margin: [20, 20]  // Increased margins between items
   });
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
 
   const [availableTools, setAvailableTools] = useState<Tool[]>([]);
   const [comingSoonTools, setComingSoonTools] = useState<Tool[]>([]);
@@ -402,7 +435,7 @@ export default function Home() {
   }, []);
 
   const handleTemplateClick = (templateId: string) => {
-    if (!isEditMode && !isResizing && !isDragging) {
+    if (!isEditMode) {
       if (expanded.templateId === templateId) {
         setExpanded({ isExpanded: false, templateId: null });
       } else {
@@ -468,14 +501,14 @@ export default function Home() {
 
   useEffect(() => {
     const preventDrag = (e: DragEvent) => {
-      if (isResizing || isDragging) {
+      if (isEditMode) {
         e.preventDefault();
         e.stopPropagation();
       }
     };
 
     const preventNavigation = (e: MouseEvent) => {
-      if (isResizing || isDragging) {
+      if (isEditMode) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -488,7 +521,7 @@ export default function Home() {
       document.removeEventListener('dragstart', preventDrag);
       document.removeEventListener('click', preventNavigation, true);
     };
-  }, [isResizing, isDragging]);
+  }, [isEditMode]);
 
   // Add helper function to get tool icon component
   const getToolIcon = (iconName: string): ReactNode => {
@@ -564,40 +597,47 @@ export default function Home() {
             margin={gridConfig.margin}
             onLayoutChange={(newLayout: Layout[]) => {
               if (isEditMode) {
+                const resizeHandles: ResizeHandle[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
                 const updatedLayouts = newLayout.map(layout => ({
                   ...layout,
                   isDraggable: true,
-                  isResizable: true
+                  isResizable: true,
+                  resizeHandles
                 }));
                 setGridConfig(prev => ({ ...prev, layouts: updatedLayouts }));
-                debounce((layouts: StoredLayout[]) => saveLayoutToFirebase(layouts), 1000)(updatedLayouts);
+                saveLayoutToFirebase(updatedLayouts);
               }
             }}
             isResizable={isEditMode}
             isDraggable={isEditMode}
-            resizeHandles={['se', 'sw', 'ne', 'nw']}
-            compactType="vertical"
-            preventCollision={false}
+            resizeHandles={['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as ResizeHandle[]}
+            compactType={null}
+            preventCollision={true}
             isBounded={true}
-            draggableHandle={isEditMode ? ".cursor-move" : ""}
+            draggableHandle=".drag-handle"
             useCSSTransforms={true}
             transformScale={1}
             autoSize={true}
-            verticalCompact={true}
-            onResizeStart={() => setIsResizing(true)}
-            onResizeStop={() => setIsResizing(false)}
-            onDragStart={() => setIsDragging(true)}
-            onDragStop={() => setIsDragging(false)}
           >
             {contextTemplates.map((template) => (
               <div key={template.id}>
                 <Card 
                   className="h-full group bg-zinc-900 hover:bg-zinc-800 transition-colors"
                 >
-                  <CardContent className="h-full p-4">
+                  <CardContent className="h-full p-4 relative">
+                    {isEditMode && (
+                      <div className="drag-handle absolute top-2 right-2 p-2 bg-zinc-800/80 rounded-lg cursor-move opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8M8 15h8" />
+                          </svg>
+                          <span className="text-xs text-zinc-400">Drag</span>
+                        </div>
+                      </div>
+                    )}
                     <div 
-                      className="h-full flex flex-col items-center justify-center text-center cursor-pointer"
-                      onClick={() => handleTemplateClick(template.id)}
+                      className={`h-full flex flex-col items-center justify-center text-center ${!isEditMode ? 'cursor-pointer' : ''}`}
+                      onClick={() => !isEditMode && handleTemplateClick(template.id)}
                     >
                       <div className="p-4 bg-zinc-800/50 rounded-xl mb-3 group-hover:bg-zinc-700/50 transition-colors">
                         {template.icon}
@@ -647,24 +687,19 @@ export default function Home() {
                       isResizable: true
                     }));
                     setGridConfig(prev => ({ ...prev, layouts: updatedLayouts }));
-                    debounce((layouts: StoredLayout[]) => saveLayoutToFirebase(layouts), 1000)(updatedLayouts);
+                    saveLayoutToFirebase(updatedLayouts);
                   }
                 }}
                 isResizable={isEditMode}
                 isDraggable={isEditMode}
-                resizeHandles={['se', 'sw', 'ne', 'nw']}
-                compactType="vertical"
-                preventCollision={false}
+                resizeHandles={['se']}
+                compactType={null}
+                preventCollision={true}
                 isBounded={true}
-                draggableHandle={isEditMode ? ".cursor-move" : ""}
+                draggableHandle=".drag-handle"
                 useCSSTransforms={true}
                 transformScale={1}
                 autoSize={true}
-                verticalCompact={true}
-                onResizeStart={() => setIsResizing(true)}
-                onResizeStop={() => setIsResizing(false)}
-                onDragStart={() => setIsDragging(true)}
-                onDragStop={() => setIsDragging(false)}
               >
                 {contexts.map((context) => (
                   <div key={context.id}>
@@ -915,13 +950,13 @@ export default function Home() {
               <button 
                 onClick={(e) => {
                   e.preventDefault();
-                  if (!isEditMode && !isResizing && !isDragging) {
+                  if (!isEditMode) {
                     window.location.href = '/';
                   }
                 }}
-                disabled={isEditMode || isResizing || isDragging}
+                disabled={isEditMode}
                 className={`text-sm ${
-                  isEditMode || isResizing || isDragging
+                  isEditMode
                     ? 'text-zinc-600 cursor-not-allowed' 
                     : 'text-zinc-300 hover:text-zinc-100'
                 }`}
@@ -931,13 +966,13 @@ export default function Home() {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  if (!isEditMode && !isResizing && !isDragging) {
+                  if (!isEditMode) {
                     window.location.href = '/context';
                   }
                 }}
-                disabled={isEditMode || isResizing || isDragging}
+                disabled={isEditMode}
                 className={`text-sm ${
-                  isEditMode || isResizing || isDragging
+                  isEditMode
                     ? 'text-zinc-600 cursor-not-allowed' 
                     : 'text-zinc-500 hover:text-zinc-300'
                 }`}

@@ -67,18 +67,33 @@ interface ActiveContext {
 
 const AppCard = ({ name, percentage, category, icon }: AppCardProps) => {
   return (
-    <Card className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800/50 transition-colors h-full cursor-move">
-      <CardContent className="p-3 sm:p-4 flex flex-col justify-between h-full">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-xs sm:text-sm text-zinc-400">{name}</p>
-            <p className="text-xs sm:text-sm font-medium text-zinc-300">{percentage}%</p>
+    <Card className="bg-zinc-800/80 hover:bg-zinc-700/80 transition-colors h-full group">
+      <CardContent className="p-4 flex flex-col justify-between h-full relative">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="p-1 bg-zinc-700/50 rounded text-[10px] text-zinc-400">
+            Drag to move
           </div>
-          {icon && <div className="text-zinc-400">{icon}</div>}
+        </div>
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              {icon && <div className="text-zinc-300">{icon}</div>}
+              <p className="text-sm font-medium text-zinc-200">{name}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-12 bg-zinc-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 rounded-full"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+              <p className="text-xs font-medium text-zinc-400">{percentage}%</p>
+            </div>
+          </div>
         </div>
         {category && (
-          <div className="mt-2 inline-flex">
-            <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded-full capitalize">
+          <div className="mt-3">
+            <span className="text-[10px] bg-zinc-700/50 text-zinc-300 px-2 py-1 rounded-full capitalize">
               {category}
             </span>
           </div>
@@ -251,48 +266,61 @@ export function AppDashboard({ defaultConfig, hideControls = false }: AppDashboa
   console.log('Current layouts:', gridConfig.layouts);
 
   return (
-    <div className="min-h-screen bg-black p-4 sm:p-6 flex flex-col pb-32">
-      <div className="grid-container w-full max-w-xl mx-auto" style={{ minHeight: `${gridConfig.rows * gridConfig.rowHeight}px` }}>
-        <GridLayout
-          className="layout"
-          layout={gridConfig.layouts || []}
-          cols={gridConfig.cols}
-          rowHeight={gridConfig.rowHeight}
-          width={width}
-          margin={gridConfig.margin}
-          onLayoutChange={(newLayout: Layout[]) => {
-            console.log('Layout changed:', newLayout);
-            setGridConfig((prev: DashboardConfig) => ({ ...prev, layouts: newLayout }));
-          }}
-          isResizable={true}
-          resizeHandles={['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne']}
-          compactType={null}
-          preventCollision={true}
-          isBounded={true}
-          maxRows={gridConfig.rows}
-          verticalCompact={false}
-        >
-          {gridConfig.apps.map((app: { name: string; percentage: number; category?: string }) => (
-            <div key={app.name}>
-              <AppCard
-                name={app.name}
-                percentage={app.percentage}
-                category={app.category}
-                icon={getIconForApp(app.name)}
-              />
-            </div>
-          ))}
-        </GridLayout>
+    <div className="min-h-screen bg-black p-6 flex flex-col pb-32">
+      <div className="grid-container w-full max-w-6xl mx-auto space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-zinc-100">Dashboard</h1>
+          <p className="text-sm text-zinc-400">Manage your applications and active contexts</p>
+        </div>
+
+        <div style={{ minHeight: `${gridConfig.rows * gridConfig.rowHeight}px` }}>
+          <GridLayout
+            className="layout"
+            layout={gridConfig.layouts || []}
+            cols={gridConfig.cols}
+            rowHeight={gridConfig.rowHeight}
+            width={width}
+            margin={[16, 16]}
+            onLayoutChange={(newLayout: Layout[]) => {
+              setGridConfig((prev: DashboardConfig) => ({ ...prev, layouts: newLayout }));
+            }}
+            isResizable={true}
+            resizeHandles={['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne']}
+            compactType={null}
+            preventCollision={true}
+            isBounded={true}
+            maxRows={gridConfig.rows}
+            verticalCompact={false}
+          >
+            {gridConfig.apps.map((app: { name: string; percentage: number; category?: string }) => (
+              <div key={app.name}>
+                <AppCard
+                  name={app.name}
+                  percentage={app.percentage}
+                  category={app.category}
+                  icon={getIconForApp(app.name)}
+                />
+              </div>
+            ))}
+          </GridLayout>
+        </div>
 
         {/* Active Contexts Section */}
         {activeContexts.length > 0 && (
-          <div className="mt-8 space-y-4">
-            <h2 className="text-lg font-medium text-zinc-100 px-1">Active Contexts</h2>
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium text-zinc-100">Active Contexts</h2>
+              <span className="text-sm text-zinc-500">{activeContexts.length} active</span>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {activeContexts.map((context) => (
                 <Card 
                   key={context.id} 
-                  className="bg-zinc-900 border-zinc-800 border-l-4 border-l-emerald-500"
+                  className={`bg-zinc-800/80 border-zinc-700/50 hover:bg-zinc-700/80 transition-colors ${
+                    context.id === 'health' ? 'border-l-4 border-l-emerald-500' :
+                    context.id === 'work' ? 'border-l-4 border-l-blue-500' :
+                    'border-l-4 border-l-amber-500'
+                  }`}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-4">
@@ -418,48 +446,50 @@ export function AppDashboard({ defaultConfig, hideControls = false }: AppDashboa
       </div>
       
       {!hideControls && (
-        <div className="fixed bottom-0 left-0 right-0 bg-zinc-900">
-          <div className="max-w-xl mx-auto space-y-4 p-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <label className="text-sm text-zinc-400">Rows:</label>
-                <input
-                  type="number"
-                  value={rowInput}
-                  onChange={(e) => setRowInput(e.target.value)}
-                  className="w-16 p-1 bg-zinc-800 text-zinc-300 rounded"
-                  min="1"
-                  max="20"
-                />
+        <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/80 backdrop-blur-sm border-t border-zinc-800">
+          <div className="max-w-6xl mx-auto p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-zinc-400">Rows:</label>
+                  <input
+                    type="number"
+                    value={rowInput}
+                    onChange={(e) => setRowInput(e.target.value)}
+                    className="w-16 px-2 py-1 bg-zinc-800 text-zinc-300 rounded border border-zinc-700 focus:outline-none focus:border-zinc-600"
+                    min="1"
+                    max="20"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-zinc-400">Columns:</label>
+                  <input
+                    type="number"
+                    value={colInput}
+                    onChange={(e) => setColInput(e.target.value)}
+                    className="w-16 px-2 py-1 bg-zinc-800 text-zinc-300 rounded border border-zinc-700 focus:outline-none focus:border-zinc-600"
+                    min="1"
+                    max="12"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    const newConfig: DashboardConfig = {
+                      ...gridConfig,
+                      rows: parseInt(rowInput) || gridConfig.rows,
+                      cols: parseInt(colInput) || gridConfig.cols,
+                    };
+                    setGridConfig(newConfig);
+                  }}
+                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"
+                >
+                  Apply Changes
+                </button>
               </div>
-              <div className="flex items-center space-x-2">
-                <label className="text-sm text-zinc-400">Columns:</label>
-                <input
-                  type="number"
-                  value={colInput}
-                  onChange={(e) => setColInput(e.target.value)}
-                  className="w-16 p-1 bg-zinc-800 text-zinc-300 rounded"
-                  min="1"
-                  max="12"
-                />
+              <div className="flex items-center gap-6">
+                <a href="/" className="text-sm text-zinc-100 hover:text-white transition-colors">Home</a>
+                <a href="/context" className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">Context</a>
               </div>
-              <button
-                onClick={() => {
-                  const newConfig: DashboardConfig = {
-                    ...gridConfig,
-                    rows: parseInt(rowInput) || gridConfig.rows,
-                    cols: parseInt(colInput) || gridConfig.cols,
-                  };
-                  setGridConfig(newConfig);
-                }}
-                className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded hover:bg-zinc-700 transition-colors"
-              >
-                Apply
-              </button>
-            </div>
-            <div className="flex justify-center space-x-8">
-              <a href="/" className="text-sm text-zinc-300">Home</a>
-              <a href="/context" className="text-sm text-zinc-500">Context</a>
             </div>
           </div>
         </div>
